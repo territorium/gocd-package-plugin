@@ -12,7 +12,7 @@
  * the License.
  */
 
-package cd.go.task.qt;
+package cd.go.task.setup;
 
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
