@@ -22,8 +22,8 @@ import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import cd.go.task.setup.Util;
 import cd.go.task.util.RequestHandler;
+import cd.go.task.util.Resources;
 
 /**
  * Get the response for a "view" request.
@@ -63,7 +63,7 @@ public class TemplateHandler implements RequestHandler {
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     JsonObjectBuilder object = Json.createObjectBuilder();
     object.add("displayValue", display);
-    object.add("template", Util.readResource(template));
+    object.add("template", Resources.readString(template));
     return DefaultGoPluginApiResponse.success(object.build().toString());
   }
 }

@@ -18,9 +18,17 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
 import cd.go.task.setup.model.TaskRequest;
 import cd.go.task.setup.model.TaskResponse;
 import cd.go.task.util.RequestHandler;
+import cd.go.task.util.Unzip;
 
 /**
  * Get the response for a "configuration" request.
@@ -70,10 +78,26 @@ public class TaskHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
+    String moduleName = task.getConfig().getValue("Module");
 
     console.printLine("Launching command on: " + task.getWorkingDirectory());
-    console.printLine("Build:" + task.getConfig().getValue("Build"));
+    console.printLine("Module Name:" + moduleName);
     console.printEnvironment(task.getEnvironment());
+
+    File workingDir = new File(task.getWorkingDirectory());
+    File modules = new File(workingDir, "download/" + moduleName);
+    File data = new File(workingDir, "package/" + moduleName + "/data");
+    data.mkdirs();
+
+    for (File file : modules.listFiles()) {
+      console.printLine("File: " + file.getAbsolutePath());
+      try {
+        Unzip.unpack(file, data);
+      } catch (IOException e) {
+        console.printLine(e.toString());
+      }
+    }
+
     return TaskResponse.success("Executed the build").toResponse();
   }
 }

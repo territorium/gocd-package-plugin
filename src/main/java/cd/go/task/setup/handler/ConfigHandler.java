@@ -51,9 +51,7 @@ public class ConfigHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     ConfigResponse config = new ConfigResponse();
-    config.setValue("Build", "BUILD", "Build", "2", true, false);
-    config.setValue("Command", null, "Command", "1", false, false);
-    config.setValue("Target", null, "Target", "3", false, false);
+    config.setValue("Module", null, "Module Name", "1", true, false);
     return config.build();
   }
 

@@ -12,7 +12,7 @@
  * the License.
  */
 
-package cd.go.task.setup;
+package cd.go.task.util;
 
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
@@ -24,19 +24,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-public class Util {
+public class Resources {
 
-  public static String readResource(String resourceFile) {
+  public static String readString(String resourceFile) {
     try (InputStreamReader reader =
-        new InputStreamReader(Util.class.getResourceAsStream(resourceFile), StandardCharsets.UTF_8)) {
+        new InputStreamReader(Resources.class.getResourceAsStream(resourceFile), StandardCharsets.UTF_8)) {
       return IOUtils.toString(reader);
     } catch (IOException e) {
       throw new RuntimeException("Could not find resource " + resourceFile, e);
     }
   }
 
-  public static byte[] readResourceBytes(String resourceFile) {
-    try (InputStream is = Util.class.getResourceAsStream(resourceFile)) {
+  public static byte[] readBytes(String resourceFile) {
+    try (InputStream is = Resources.class.getResourceAsStream(resourceFile)) {
       return readFully(is);
     } catch (IOException e) {
       throw new RuntimeException("Could not find resource " + resourceFile, e);
@@ -45,14 +45,14 @@ public class Util {
 
   public static boolean isWindows() {
     String osName = System.getProperty("os.name");
-    boolean isWindows = Util.containsIgnoreCase(osName, "windows");
+    boolean isWindows = Resources.containsIgnoreCase(osName, "windows");
     JobConsoleLogger.getConsoleLogger()
         .printLine("OS detected: '" + osName + "'. Is Windows: " + (isWindows ? "yes" : "no"));
     return isWindows;
   }
 
 
-  public static boolean containsIgnoreCase(String text, String value) {
+  private static boolean containsIgnoreCase(String text, String value) {
     return text != null && value != null && text.toLowerCase().contains(value.toLowerCase());
   }
 
