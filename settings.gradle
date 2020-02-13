@@ -15,4 +15,4 @@
  * limitations under the License.
  */
 
-rootProject.name = 'setup-task-plugin'
+rootProject.name = 'package-task-plugin'

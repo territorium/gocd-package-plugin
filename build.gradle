@@ -31,7 +31,7 @@ def gitRevision = { ->
 project.ext.gitRevision = gitRevision()
 
 group = 'tol.info.gocd.plugin'
-version = '0.0.25'
+version = '0.0.32'
 
 // these values that go into plugin.xml
 project.ext.pluginDesc = [
@@ -41,7 +41,7 @@ project.ext.pluginDesc = [
   name       : 'Task plugin for Qt Installer',
   description: 'Plugin allows to create Qt Installer tasks',
   vendorName : 'TOL GmbH',
-  vendorUrl  : 'https://github.com/territorium/gocd-setup-task-plugin.git'
+  vendorUrl  : 'https://github.com/territorium/gocd-package-task-plugin.git'
 ]
 
 sourceCompatibility = 1.8
