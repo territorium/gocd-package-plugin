@@ -28,7 +28,7 @@ import java.util.zip.ZipInputStream;
 import cd.go.task.setup.model.TaskRequest;
 import cd.go.task.setup.model.TaskResponse;
 import cd.go.task.util.RequestHandler;
-import cd.go.task.util.Unzip;
+import cd.go.task.util.Archive;
 
 /**
  * Get the response for a "configuration" request.
@@ -92,7 +92,7 @@ public class TaskHandler implements RequestHandler {
     for (File file : modules.listFiles()) {
       console.printLine("File: " + file.getAbsolutePath());
       try {
-        Unzip.unpack(file, data);
+        Archive.unzip(file, data);
       } catch (IOException e) {
         console.printLine(e.toString());
       }

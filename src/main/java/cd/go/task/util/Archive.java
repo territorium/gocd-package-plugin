@@ -19,26 +19,33 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
 /**
- * The {@link Unzip} class.
+ * The {@link Archive} class.
  */
-public abstract class Unzip {
+public abstract class Archive {
 
   /**
-   * Constructs an instance of {@link Unzip}.
+   * Constructs an instance of {@link Archive}.
    */
-  private Unzip() {}
+  private Archive() {}
 
   /**
    * @throws IOException
    * 
    */
-  public static boolean unpack(File file, File target) throws IOException {
+  public static boolean unzip(File file, File target) throws IOException {
     byte[] buffer = new byte[4096];
     try (ZipInputStream stream = new ZipInputStream(new FileInputStream(file))) {
       ZipEntry entry = stream.getNextEntry();
@@ -68,14 +75,40 @@ public abstract class Unzip {
     return true;
   }
 
-  // Files.move(new File("/tmp/test").toPath(), new File("/tmp/test2").toPath(),
-  // StandardCopyOption.REPLACE_EXISTING);
 
-  public static void main(String... args) throws IOException {
-    unpack(
-        new File(
-            "/var/lib/go-agent/pipelines/smartIO-Installer-Develop/download/tol.app.web/smartIO-Web-20.x.43-18304.zip"),
-        new File("/tmp/test"));
+  public static void main(String... args) throws Throwable {
+    // File file = new File("/tmp/test/smartIO-Web-20.0.43-18304.zip");
+    // unzip(file, new File("/tmp/test"));
+    // Version version = Version.parse(file.getName());
+    // System.out.println(Version.parse(file.getName()));
+    // File target = new File("/tmp/test/data/webapps/client/smartio-" +
+    // version.toString("0.0.0")+"-Build-"+version.getBuild());
+    // target.getParentFile().mkdirs();
+    // Files.move(new File("/tmp/test/smartio").toPath(), target.toPath(),
+    // StandardCopyOption.REPLACE_EXISTING);
+
+
+    XMLInputFactory xmlInputFactory = XMLInputFactory.newInstance();
+    XMLEventReader reader = xmlInputFactory.createXMLEventReader(
+        new FileInputStream(new File("/data/smartIO/develop/installer/packages2/tol/meta/package.xml")));
+
+    while (reader.hasNext()) {
+      XMLEvent nextEvent = reader.nextEvent();
+      if (nextEvent.isStartElement()) {
+        StartElement startElement = nextEvent.asStartElement();
+        System.out.print("<" + startElement.getName().getLocalPart() + ">");
+        startElement.getAttributes().forEachRemaining(a -> System.out
+            .print(" " + ((Attribute) a).getName().getLocalPart() + "=\"" + ((Attribute) a).getValue() + "\""));
+      }
+      if (nextEvent.isCharacters()) {
+        System.out.print(nextEvent.asCharacters());
+      }
+      if (nextEvent.isEndElement()) {
+        EndElement endElement = nextEvent.asEndElement();
+        System.out.print("</" + endElement.getName().getLocalPart() + ">");
+      }
+    }
+
   }
 
   private static File newFile(File target, ZipEntry entry) throws IOException {
