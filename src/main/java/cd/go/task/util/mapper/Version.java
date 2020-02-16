@@ -17,7 +17,7 @@
  * License.
  */
 
-package cd.go.task.util;
+package cd.go.task.util.mapper;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

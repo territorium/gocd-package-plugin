@@ -17,7 +17,7 @@
  * License.
  */
 
-package cd.go.task.util;
+package cd.go.task.util.mapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,16 +93,17 @@ public class PackageInfo {
 
         if (name.equalsIgnoreCase(PackageInfo.VERSION)) {
           ignore = true;
-          PackageInfo.writeTag(PackageInfo.VERSION, version.toString("0.0.0-0"), buffer);
+          buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.VERSION, version.toString("0.0.0-0")));
         } else if (name.equalsIgnoreCase(PackageInfo.RELEASE_DATE)) {
           ignore = true;
-          PackageInfo.writeTag(PackageInfo.RELEASE_DATE, localDate.toString(), buffer);
+          buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.RELEASE_DATE, localDate.toString()));
         } else {
           buffer.append("<");
           buffer.append(name);
           Iterator<Attribute> attrs = startElement.getAttributes();
           while (attrs.hasNext()) {
-            PackageInfo.writeAttribute(attrs.next(), buffer);
+            Attribute attr = attrs.next();
+            buffer.append(String.format(" %s=\"%s\"", attr.getName(), attr.getValue()));
           }
           buffer.append(">");
         }
@@ -123,36 +124,5 @@ public class PackageInfo {
     }
     buffer.append("\n");
     return buffer.toString();
-  }
-
-  /**
-   * Write a tag with a single value for the XML.
-   *
-   * @param name
-   * @param value
-   * @param buffer
-   */
-  private static final void writeTag(String name, String value, StringBuffer buffer) {
-    buffer.append("<");
-    buffer.append(name);
-    buffer.append(">");
-    buffer.append(value);
-    buffer.append("</");
-    buffer.append(name);
-    buffer.append(">");
-  }
-
-  /**
-   * Write an attribute for the XML.
-   *
-   * @param attr
-   * @param buffer
-   */
-  private static final void writeAttribute(Attribute attr, StringBuffer buffer) {
-    buffer.append(" ");
-    buffer.append(attr.getName());
-    buffer.append("=\"");
-    buffer.append(attr.getValue());
-    buffer.append("\"");
   }
 }

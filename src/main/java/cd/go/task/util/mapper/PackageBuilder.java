@@ -17,7 +17,7 @@
  * License.
  */
 
-package cd.go.task.util;
+package cd.go.task.util.mapper;
 
 import java.io.File;
 import java.io.IOException;

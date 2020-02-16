@@ -26,49 +26,64 @@ import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
-import java.util.Collections;
+import java.util.Arrays;
 
+import cd.go.task.handler.ValidateHandler;
+import cd.go.task.handler.ViewHandler;
 import cd.go.task.setup.handler.ConfigHandler;
 import cd.go.task.setup.handler.TaskHandler;
-import cd.go.task.setup.handler.TemplateHandler;
-import cd.go.task.setup.handler.ValidationHandler;
 import cd.go.task.util.Request;
 
+/**
+ * GoPlugin interface represents Go plugin. It is necessary to implement this
+ * interface for any plugin implementation to be recognized as a Go plugin
+ */
 @Extension
 public class SetupPlugin implements GoPlugin {
 
-  private static final String EXTENSION = "task";
-  private static final String VERSION   = "1.0";
-  private static final Logger LOGGER    = Logger.getLoggerFor(SetupPlugin.class);
-
-
-  private static final GoPluginIdentifier PLUGIN_IDENTIFIER =
-      new GoPluginIdentifier(EXTENSION, Collections.singletonList(VERSION));
+  private static final Logger LOGGER = Logger.getLoggerFor(SetupPlugin.class);
 
 
   private GoApplicationAccessor accessor;
 
+  /**
+   * Provides an instance of GoPluginIdentifier, providing details about
+   * supported extension point and its versions
+   */
   public GoPluginIdentifier pluginIdentifier() {
-    return PLUGIN_IDENTIFIER;
+    return new GoPluginIdentifier("task", Arrays.asList("1.0"));
   }
 
+  /**
+   * Initializes an instance of GoApplicationAccessor. This method would be
+   * invoked before Go interacts with plugin to handle any GoPluginApiRequest.
+   * Instance of GoApplicationAccessor will allow plugin to communicate with Go.
+   *
+   * @param accessor
+   */
   @Override
   public void initializeGoApplicationAccessor(GoApplicationAccessor accessor) {
     this.accessor = accessor;
   }
 
+  /**
+   * Handles GoPluginApiRequest request submitted from Go to plugin
+   * implementation and returns result as GoPluginApiResponse
+   *
+   * @param request
+   */
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) throws UnhandledRequestTypeException {
     try {
       switch (request.requestName()) {
         case Request.TASK_VIEW:
-          return new TemplateHandler("Qt Packages", "/task.template.html").handle(request);
+          return new ViewHandler("Qt Packages", "/task.template.html").handle(request);
 
         case Request.TASK_CONFIG:
           return new ConfigHandler().handle(request);
 
         case Request.TASK_VALIDATE:
-          return new ValidationHandler().handle(request);
+          return new ValidateHandler().handle(request);
 
         case Request.TASK_EXECUTE:
           return new TaskHandler(JobConsoleLogger.getConsoleLogger()).handle(request);

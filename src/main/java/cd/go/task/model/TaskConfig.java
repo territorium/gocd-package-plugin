@@ -13,7 +13,7 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package cd.go.task.setup.model;
+package cd.go.task.model;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 

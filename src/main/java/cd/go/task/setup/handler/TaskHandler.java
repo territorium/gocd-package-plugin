@@ -23,16 +23,16 @@ import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 import java.io.File;
 import java.nio.file.Paths;
 
-import cd.go.task.setup.model.TaskRequest;
-import cd.go.task.setup.model.TaskResponse;
-import cd.go.task.util.PackageBuilder;
+import cd.go.task.model.TaskRequest;
+import cd.go.task.model.TaskResponse;
 import cd.go.task.util.RequestHandler;
-import cd.go.task.util.Version;
+import cd.go.task.util.mapper.PackageBuilder;
 import cd.go.task.util.mapper.PathBuilder;
+import cd.go.task.util.mapper.Version;
 import cd.go.task.util.mapper.PathBuilder.Match;
 
 /**
- * Get the response for a "configuration" request.
+ * This message is sent by the GoCD agent to the plugin to execute the task.
  * 
  * <pre>
  * {
