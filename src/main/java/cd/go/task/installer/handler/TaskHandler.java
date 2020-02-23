@@ -14,7 +14,7 @@
  * the License.
  */
 
-package cd.go.task.setup.handler;
+package cd.go.task.installer.handler;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -22,14 +22,19 @@ import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 
+import cd.go.task.installer.Packages;
+import cd.go.task.installer.Qt;
+import cd.go.task.installer.mapper.PackagesBuilder;
+import cd.go.task.installer.mapper.PackageBuilder;
+import cd.go.task.installer.mapper.PathBuilder;
+import cd.go.task.installer.mapper.PathBuilder.Match;
+import cd.go.task.installer.mapper.Version;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
 import cd.go.task.util.RequestHandler;
-import cd.go.task.util.mapper.PackageBuilder;
-import cd.go.task.util.mapper.PathBuilder;
-import cd.go.task.util.mapper.Version;
-import cd.go.task.util.mapper.PathBuilder.Match;
 
 /**
  * This message is sent by the GoCD agent to the plugin to execute the task.
@@ -79,6 +84,7 @@ public class TaskHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
+    String mode = task.getConfig().getValue("mode");
     String name = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
@@ -88,19 +94,45 @@ public class TaskHandler implements RequestHandler {
 
     File workingDir = new File(task.getWorkingDirectory());
 
-    File packages = new File(workingDir, "packages2");
-    PackageBuilder builder = new PackageBuilder(packages);
-    PathBuilder builder2 = PathBuilder.of(workingDir);
-
     try {
-      for (Match m : builder2.build(source)) {
-        Version version = Version.parse(m.getParamater("VERSION"));
-        builder.build(name, m.getFile(), version, Paths.get(m.map(target)));
-      }
-    } catch (Exception e) {
-      console.printLine(e.toString());
-    }
+      switch (mode) {
+        case "INIT":
+          PackagesBuilder pkgBuilder = PackagesBuilder.of(workingDir, task.getEnvironment());
+          pkgBuilder.build(source);
+          break;
 
+        case "REPOSITORY":
+          File repogen = new File(Qt.of(task.getEnvironment()).getInstallerBin(), "repogen");
+          String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
+          String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
+
+          List<String> command = Arrays.asList(repogen.getAbsolutePath(), "--update", "-p", packages, repository);
+          ProcessBuilder builder = new ProcessBuilder(command);
+          builder.directory(new File(task.getWorkingDirectory()));
+          builder.environment().putAll(task.getEnvironment());
+
+          Process process = builder.start();
+          console.readErrorOf(process.getErrorStream());
+          console.readOutputOf(process.getInputStream());
+
+          int exitCode = process.waitFor();
+          process.destroy();
+          return (exitCode == 0) ? TaskResponse.success("Executed the build").toResponse()
+              : TaskResponse.failure("Could not execute build! Process returned with status code " + exitCode)
+                  .toResponse();
+
+        default:
+          PackageBuilder data = PackageBuilder.of(workingDir, task.getEnvironment());
+          PathBuilder pathes = PathBuilder.of(workingDir);
+          for (Match m : pathes.build(source)) {
+            Version version = Version.parse(m.getParamater(Packages.VERSION));
+            data.build(name, m.getFile(), version, Paths.get(m.map(target)));
+          }
+          break;
+      }
+    } catch (Throwable e) {
+      return TaskResponse.failure(e.getMessage()).toResponse();
+    }
     return TaskResponse.success("Executed the build").toResponse();
   }
 }

@@ -17,7 +17,7 @@
  * License.
  */
 
-package cd.go.task.util.mapper;
+package cd.go.task.installer.mapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -143,9 +143,12 @@ public class PathBuilder {
 
       Matcher matcher = PathBuilder.PARAMETERS.matcher(input);
       while (matcher.find()) {
-        String value = getParameter(matcher.group(1), params);
+        String name = matcher.group(1);
+        String value = getParameter(name, params);
         buffer.append(input.substring(offset, matcher.start(1) - 1));
-        if (value != null) {
+        if (value == null) {
+          buffer.append("$" + name);
+        } else {
           buffer.append(value);
         }
         offset = matcher.end(1);

@@ -14,7 +14,7 @@
  * the License.
  */
 
-package cd.go.task.setup.handler;
+package cd.go.task.installer.handler;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -53,6 +53,7 @@ public class ConfigHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     ConfigResponse config = new ConfigResponse();
+    config.setValue("mode", "INIT", "Mode", "1", true, false);
     config.setValue("module", null, "Module Name", "1", true, false);
     config.setValue("source", null, "Source Pattern", "1", true, false);
     config.setValue("target", null, "Target Pattern", "1", true, false);

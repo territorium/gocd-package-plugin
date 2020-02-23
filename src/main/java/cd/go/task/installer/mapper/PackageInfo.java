@@ -17,7 +17,7 @@
  * License.
  */
 
-package cd.go.task.util.mapper;
+package cd.go.task.installer.mapper;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,7 +36,7 @@ import javax.xml.stream.events.XMLEvent;
 /**
  * The {@link PackageInfo} class.
  */
-public class PackageInfo {
+class PackageInfo {
 
   private static final String VERSION      = "Version";
   private static final String RELEASE_DATE = "ReleaseDate";
@@ -44,15 +44,15 @@ public class PackageInfo {
   private static final Path   PACKAGE      = Paths.get("meta", "package.xml");
 
 
-  private File directory;
+  private final Path path;
 
   /**
    * Constructs an instance of {@link PackageInfo}.
    * 
-   * @param directory
+   * @param path
    */
-  public PackageInfo(File directory) {
-    this.directory = directory;
+  PackageInfo(Path path) {
+    this.path = path;
   }
 
   /**
@@ -61,8 +61,8 @@ public class PackageInfo {
    * @param version
    * @param localDate
    */
-  public void updatePackageInfo(Version version, LocalDate localDate) throws Exception {
-    File file = directory.toPath().resolve(PACKAGE).toFile();
+  void updatePackageInfo(Version version, LocalDate localDate) throws Exception {
+    File file = path.resolve(PACKAGE).toFile();
     String text = readPackageInfo(file, version, localDate);
     try (FileWriter writer = new FileWriter(file)) {
       writer.write(text);
@@ -110,7 +110,6 @@ public class PackageInfo {
       }
       if (nextEvent.isCharacters() && !ignore) {
         buffer.append(nextEvent.asCharacters());
-        ignore = false;
       }
       if (nextEvent.isEndElement()) {
         if (!ignore) {

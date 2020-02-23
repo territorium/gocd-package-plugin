@@ -14,7 +14,7 @@
  * the License.
  */
 
-package cd.go.task.setup;
+package cd.go.task.installer;
 
 import com.thoughtworks.go.plugin.api.GoApplicationAccessor;
 import com.thoughtworks.go.plugin.api.GoPlugin;
@@ -30,8 +30,8 @@ import java.util.Arrays;
 
 import cd.go.task.handler.ValidateHandler;
 import cd.go.task.handler.ViewHandler;
-import cd.go.task.setup.handler.ConfigHandler;
-import cd.go.task.setup.handler.TaskHandler;
+import cd.go.task.installer.handler.ConfigHandler;
+import cd.go.task.installer.handler.TaskHandler;
 import cd.go.task.util.Request;
 
 /**
@@ -39,9 +39,9 @@ import cd.go.task.util.Request;
  * interface for any plugin implementation to be recognized as a Go plugin
  */
 @Extension
-public class SetupPlugin implements GoPlugin {
+public class PackagesPlugin implements GoPlugin {
 
-  private static final Logger LOGGER = Logger.getLoggerFor(SetupPlugin.class);
+  private static final Logger LOGGER = Logger.getLoggerFor(PackagesPlugin.class);
 
 
   private GoApplicationAccessor accessor;
