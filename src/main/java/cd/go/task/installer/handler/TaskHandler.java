@@ -1,16 +1,14 @@
 /*
  * Copyright 2017 ThoughtWorks, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
 
@@ -27,10 +25,10 @@ import java.util.List;
 
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
-import cd.go.task.installer.mapper.PackagesBuilder;
 import cd.go.task.installer.mapper.PackageBuilder;
+import cd.go.task.installer.mapper.PackagesBuilder;
 import cd.go.task.installer.mapper.PathBuilder;
-import cd.go.task.installer.mapper.PathBuilder.Match;
+import cd.go.task.installer.mapper.PathBuilder.PathMatcher;
 import cd.go.task.installer.mapper.Version;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
@@ -38,7 +36,7 @@ import cd.go.task.util.RequestHandler;
 
 /**
  * This message is sent by the GoCD agent to the plugin to execute the task.
- * 
+ *
  * <pre>
  * {
  *   "config": {
@@ -78,14 +76,15 @@ public class TaskHandler implements RequestHandler {
 
   /**
    * Handles a request and provides a response.
-   * 
+   *
    * @param request
    */
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
     String mode = task.getConfig().getValue("mode");
-    String name = task.getConfig().getValue("module");
+    String modulePath = task.getConfig().getValue("path");
+    String moduleName = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
 
@@ -98,7 +97,7 @@ public class TaskHandler implements RequestHandler {
       switch (mode) {
         case "INIT":
           PackagesBuilder pkgBuilder = PackagesBuilder.of(workingDir, task.getEnvironment());
-          pkgBuilder.build(source);
+          pkgBuilder.build(modulePath);
           break;
 
         case "REPOSITORY":
@@ -122,11 +121,11 @@ public class TaskHandler implements RequestHandler {
                   .toResponse();
 
         default:
-          PackageBuilder data = PackageBuilder.of(workingDir, task.getEnvironment());
+          PackageBuilder data = PackageBuilder.of(workingDir);
           PathBuilder pathes = PathBuilder.of(workingDir);
-          for (Match m : pathes.build(source)) {
-            Version version = Version.parse(m.getParamater(Packages.VERSION));
-            data.build(name, m.getFile(), version, Paths.get(m.map(target)));
+          for (PathMatcher m : pathes.build(source)) {
+            Version version = Version.parse(m.getParameter(Packages.VERSION));
+            data.build(moduleName, m.getFile(), version, Paths.get(m.map(target)));
           }
           break;
       }

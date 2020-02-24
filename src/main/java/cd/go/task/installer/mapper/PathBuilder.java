@@ -1,20 +1,16 @@
 /*
- * Copyright (c) 2001-2019 Territorium Online Srl / TOL GmbH. All Rights
- * Reserved.
+ * Copyright (c) 2001-2019 Territorium Online Srl / TOL GmbH. All Rights Reserved.
  *
- * This file contains Original Code and/or Modifications of Original Code as
- * defined in and that are subject to the Territorium Online License Version
- * 1.0. You may not use this file except in compliance with the License. Please
- * obtain a copy of the License at http://www.tol.info/license/ and read it
- * before using this file.
+ * This file contains Original Code and/or Modifications of Original Code as defined in and that are
+ * subject to the Territorium Online License Version 1.0. You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at http://www.tol.info/license/
+ * and read it before using this file.
  *
- * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS
- * OR IMPLIED, AND TERRITORIUM ONLINE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
- * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR
- * A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see the
- * License for the specific language governing rights and limitations under the
- * License.
+ * The Original Code and all software distributed under the License are distributed on an 'AS IS'
+ * basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND TERRITORIUM ONLINE HEREBY
+ * DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see the License for
+ * the specific language governing rights and limitations under the License.
  */
 
 package cd.go.task.installer.mapper;
@@ -27,9 +23,6 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,15 +30,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The {@link PathBuilder} is an utility that get all files that match the input
- * pattern. The returned {@link PathBuilder}'s allow to replace the parameters
- * of an input with the parameters found on the matches.
+ * The {@link PathBuilder} is an utility that get all files that match the input pattern. The
+ * returned {@link PathBuilder}'s allow to replace the parameters of an input with the parameters
+ * found on the matches.
  */
 public class PathBuilder {
-
-  private static final Pattern NAMES      = Pattern.compile("\\(\\?<([a-zA-Z][a-zA-Z_0-9]*)>");
-  private static final Pattern PARAMETERS = Pattern.compile("\\$([0-9]+|[a-zA-Z][a-zA-Z_0-9]*)");
-
 
   private final Path workingDir;
 
@@ -59,18 +48,16 @@ public class PathBuilder {
   }
 
   /**
-   * Resolve the input pattern on the working directory, to find all matching
-   * files.
+   * Resolve the input pattern on the working directory, to find all matching files.
    */
-  public final List<Match> build(String pattern) throws IOException {
+  public final List<PathMatcher> build(String pattern) throws IOException {
     PathVisitor visitor = new PathVisitor(workingDir, pattern);
     Files.walkFileTree(workingDir, visitor);
     return visitor.mappers;
   }
 
   /**
-   * Resolve the input pattern on the working directory, to find all matching
-   * files.
+   * Resolve the input pattern on the working directory, to find all matching files.
    *
    * @param workingDir
    */
@@ -78,7 +65,7 @@ public class PathBuilder {
     return new PathBuilder(workingDir.toPath());
   }
 
-  public class Match {
+  public class PathMatcher {
 
     private final File                file;
     private final Map<String, String> params;
@@ -89,7 +76,7 @@ public class PathBuilder {
      * @param file
      * @param params
      */
-    private Match(File file, Map<String, String> params) {
+    private PathMatcher(File file, Map<String, String> params) {
       this.file = file;
       this.params = params;
     }
@@ -103,48 +90,26 @@ public class PathBuilder {
 
     /**
      * Gets the named parameter.
-     * 
+     *
      * @param name
      */
-    public final String getParamater(String name) {
+    public final String getParameter(String name) {
       return params.get(name);
     }
 
     /**
-     * Gets the parameter by name.
-     * 
-     * @param name
-     * @param params
-     */
-    protected final String getParameter(String name, Map<String, String> params) {
-      return params.containsKey(name) ? params.get(name) : this.params.get(name);
-    }
-
-    /**
-     * Map the input using the current instance.
-     * 
+     * Replaces the indexed or named placeholder's with the the parameter values.
+     *
      * @param input
      */
     public String map(String input) {
-      return map(input, Collections.emptyMap());
-    }
-
-    /**
-     * Replaces the indexed or named placeholder's with the the parameter
-     * values. The indexed values are provided by the {@link PathBuilder} self,
-     * the named values are provided from outside.
-     *
-     * @param input
-     * @param params
-     */
-    public String map(String input, Map<String, String> params) {
       StringBuffer buffer = new StringBuffer();
       int offset = 0;
 
-      Matcher matcher = PathBuilder.PARAMETERS.matcher(input);
+      Matcher matcher = Parameter.PARAMS.matcher(input);
       while (matcher.find()) {
         String name = matcher.group(1);
-        String value = getParameter(name, params);
+        String value = getParameter(name);
         buffer.append(input.substring(offset, matcher.start(1) - 1));
         if (value == null) {
           buffer.append("$" + name);
@@ -160,9 +125,9 @@ public class PathBuilder {
 
   private class PathVisitor extends SimpleFileVisitor<Path> {
 
-    private final Pattern     pattern;
-    private final Set<String> names;
-    private final List<Match> mappers;
+    private final Pattern           pattern;
+    private final Set<String>       names;
+    private final List<PathMatcher> mappers;
 
     /**
      * Constructs an instance of {@link PathVisitor}.
@@ -172,7 +137,7 @@ public class PathBuilder {
      */
     private PathVisitor(Path workingDir, String pattern) {
       this.pattern = Pattern.compile("^" + pattern + "$");
-      this.names = getGroupNames(pattern);
+      names = Parameter.getGroupNames(pattern);
       mappers = new ArrayList<>();
     }
 
@@ -190,41 +155,10 @@ public class PathBuilder {
       String input = workingDir.relativize(path).toString();
       Matcher matcher = pattern.matcher(input);
       if (matcher.find()) {
-        mappers.add(new Match(path.toFile(), getParameters(matcher, names)));
+        mappers.add(new PathMatcher(path.toFile(), Parameter.getParameters(matcher, names)));
         return FileVisitResult.SKIP_SUBTREE;
       }
       return FileVisitResult.CONTINUE;
     }
-  }
-
-  /**
-   * Parses the group names from the pattern.
-   *
-   * @param pattern
-   */
-  public static Set<String> getGroupNames(String pattern) {
-    Set<String> names = new HashSet<>();
-    Matcher matcher = NAMES.matcher(pattern);
-    while (matcher.find())
-      names.add(matcher.group(1));
-    return names;
-  }
-
-  /**
-   * Get the indexed parameters from the matcher.
-   *
-   * @param matcher
-   * @param names
-   */
-  private static Map<String, String> getParameters(Matcher matcher, Set<String> names) {
-    Map<String, String> params = new HashMap<>();
-    params.put(Integer.toString(0), matcher.group(0));
-    for (int index = 0; index < matcher.groupCount(); index++) {
-      params.put(Integer.toString(index + 1), matcher.group(index + 1));
-    }
-    for (String name : names) {
-      params.put(name, matcher.group(name));
-    }
-    return params;
   }
 }

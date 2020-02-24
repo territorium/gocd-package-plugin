@@ -1,20 +1,16 @@
 /*
- * Copyright (c) 2001-2020 Territorium Online Srl / TOL GmbH. All Rights
- * Reserved.
+ * Copyright (c) 2001-2020 Territorium Online Srl / TOL GmbH. All Rights Reserved.
  *
- * This file contains Original Code and/or Modifications of Original Code as
- * defined in and that are subject to the Territorium Online License Version
- * 1.0. You may not use this file except in compliance with the License. Please
- * obtain a copy of the License at http://www.tol.info/license/ and read it
- * before using this file.
+ * This file contains Original Code and/or Modifications of Original Code as defined in and that are
+ * subject to the Territorium Online License Version 1.0. You may not use this file except in
+ * compliance with the License. Please obtain a copy of the License at http://www.tol.info/license/
+ * and read it before using this file.
  *
- * The Original Code and all software distributed under the License are
- * distributed on an 'AS IS' basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS
- * OR IMPLIED, AND TERRITORIUM ONLINE HEREBY DISCLAIMS ALL SUCH WARRANTIES,
- * INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR
- * A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see the
- * License for the specific language governing rights and limitations under the
- * License.
+ * The Original Code and all software distributed under the License are distributed on an 'AS IS'
+ * basis, WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, AND TERRITORIUM ONLINE HEREBY
+ * DISCLAIMS ALL SUCH WARRANTIES, INCLUDING WITHOUT LIMITATION, ANY WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE, QUIET ENJOYMENT OR NON-INFRINGEMENT. Please see the License for
+ * the specific language governing rights and limitations under the License.
  */
 
 package cd.go.task.installer.mapper;
@@ -23,10 +19,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The {@link Version} implements the syntax of version. The version supports
- * major, minor, patch and build number. Major and minor are mandatory, patch
- * and build are optional. All elements are numbers, except the build number,
- * which is a text without spaces.
+ * The {@link Version} implements the syntax of version. The version supports major, minor, patch
+ * and build number. Major and minor are mandatory, patch and build are optional. All elements are
+ * numbers, except the build number, which is a text without spaces.
  *
  * The {@link Version} expects following format: MAJOR.MINOR.PATCH-BUILD. e.g:
  *
@@ -69,28 +64,28 @@ public final class Version implements Comparable<Version> {
    * Gets the major number.
    */
   public final int getMajor() {
-    return this.major;
+    return major;
   }
 
   /**
    * Gets the minor number.
    */
   public final int getMinor() {
-    return this.minor;
+    return minor;
   }
 
   /**
    * Gets the patch number.
    */
   public final int getPatch() {
-    return this.patch;
+    return patch;
   }
 
   /**
    * Gets the build text.
    */
   public final String getBuild() {
-    return this.build;
+    return build;
   }
 
   /**
