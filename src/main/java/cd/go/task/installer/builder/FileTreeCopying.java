@@ -13,7 +13,7 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package cd.go.task.installer.mapper;
+package cd.go.task.installer.builder;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
@@ -48,7 +48,7 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
   }
 
   protected final Path normalize(Path path) {
-    Path p = Parameter.replaceAll(path, environment);
+    Path p = Parameter.of(environment).replace(path);
     return target.resolve(source.relativize(p));
   }
 

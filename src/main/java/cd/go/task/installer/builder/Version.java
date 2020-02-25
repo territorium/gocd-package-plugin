@@ -13,7 +13,7 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package cd.go.task.installer.mapper;
+package cd.go.task.installer.builder;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -19,17 +19,12 @@ import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
-import cd.go.task.installer.mapper.PackageBuilder;
-import cd.go.task.installer.mapper.PackagesBuilder;
-import cd.go.task.installer.mapper.PathBuilder;
-import cd.go.task.installer.mapper.PathBuilder.PathMatcher;
-import cd.go.task.installer.mapper.Version;
+import cd.go.task.installer.builder.PackageBuilder;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
 import cd.go.task.util.RequestHandler;
@@ -88,18 +83,12 @@ public class TaskHandler implements RequestHandler {
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
 
-    console.printLine("Launching command on: " + task.getWorkingDirectory());
-    console.printEnvironment(task.getEnvironment());
+    // console.printLine("Launching command on: " + task.getWorkingDirectory());
+    // console.printEnvironment(task.getEnvironment());
 
     File workingDir = new File(task.getWorkingDirectory());
-
     try {
       switch (mode) {
-        case "INIT":
-          PackagesBuilder pkgBuilder = PackagesBuilder.of(workingDir, task.getEnvironment());
-          pkgBuilder.build(modulePath);
-          break;
-
         case "REPOSITORY":
           File repogen = new File(Qt.of(task.getEnvironment()).getInstallerBin(), "repogen");
           String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
@@ -121,12 +110,10 @@ public class TaskHandler implements RequestHandler {
                   .toResponse();
 
         default:
-          PackageBuilder data = PackageBuilder.of(workingDir);
-          PathBuilder pathes = PathBuilder.of(workingDir);
-          for (PathMatcher m : pathes.build(source)) {
-            Version version = Version.parse(m.getParameter(Packages.VERSION));
-            data.build(moduleName, m.getFile(), version, Paths.get(m.map(target)));
-          }
+          PackageBuilder builder2 = PackageBuilder.of(workingDir, task.getEnvironment());
+          builder2.setPackagePath(modulePath);
+          builder2.addPackage(moduleName, new File(workingDir, source), target);
+          builder2.build();
           break;
       }
     } catch (Throwable e) {

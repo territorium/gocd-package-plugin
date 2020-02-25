@@ -21,12 +21,14 @@ package cd.go.task.installer;
  */
 public interface Packages {
 
-  String VERSION    = "VERSION";
+  String VERSION      = "VERSION";
+  String RELEASE      = "RELEASE";
+  String RELEASE_DATE = "RELEASE_DATE";
 
-  String META       = "meta";
-  String DATA       = "data";
+  String META         = "meta";
+  String DATA         = "data";
 
-  String BUILD      = "build";
-  String BUILD_PKG  = "packages";
-  String BUILD_REPO = "repository";
+  String BUILD        = "build";
+  String BUILD_PKG    = "packages";
+  String BUILD_REPO   = "repository";
 }
