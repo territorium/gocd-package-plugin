@@ -24,52 +24,75 @@ import java.util.Map;
  */
 public class Qt {
 
-  private static final String QT_HOME = "QT_HOME";
+	private static final String QT_HOME = "QT_HOME";
 
+	private final Map<String, String> environment;
 
-  private final Map<String, String> environment;
+	/**
+	 * Constructs an instance of {@link Qt}.
+	 *
+	 * @param environment
+	 */
+	private Qt(Map<String, String> environment) {
+		this.environment = environment;
+	}
 
-  /**
-   * Constructs an instance of {@link Qt}.
-   *
-   * @param environment
-   */
-  private Qt(Map<String, String> environment) {
-    this.environment = environment;
-  }
+	/**
+	 * Constructs an instance of {@link Qt}.
+	 *
+	 * @param environment
+	 */
+	public static Qt of(Map<String, String> environment) {
+		return new Qt(environment);
+	}
 
-  /**
-   * Constructs an instance of {@link Qt}.
-   *
-   * @param environment
-   */
-  public static Qt of(Map<String, String> environment) {
-    return new Qt(environment);
-  }
+	/**
+	 * Get the Qt HOME directory
+	 */
+	public final File getQtHome() {
+		return new File(environment.get(Qt.QT_HOME));
+	}
 
-  /**
-   * Get the Qt HOME directory
-   */
-  public final File getQtHome() {
-    return new File(environment.get(Qt.QT_HOME));
-  }
+	/**
+	 * Get the Qt BASE directory
+	 */
+	public final File getQtBase() {
+		return getQtHome().getParentFile();
+	}
 
-  /**
-   * Get the Qt BASE directory
-   */
-  public final File getQtBase() {
-    return getQtHome().getParentFile();
-  }
+	/**
+	 * Get the QtInstallerFramework binary
+	 */
+	public final File getInstallerBin() {
+		Path path = getQtBase().toPath().resolve("Tools").resolve("QtInstallerFramework");
+		for (File file : path.toFile().listFiles()) {
+			return path.resolve(file.getName()).resolve("bin").toFile();
+		}
+		return path.resolve("3.0").resolve("bin").toFile();
+	}
 
+	/**
+	 * Get the Qt epository generator
+	 */
+	public final File getRepogen() {
+		String repogen = isWindows() ? "repogen.exe" : "repogen";
+		return new File(getInstallerBin(), repogen);
+	}
 
-  /**
-   * Get the QtInstallerFramework binary
-   */
-  public final File getInstallerBin() {
-    Path path = getQtBase().toPath().resolve("Tools").resolve("QtInstallerFramework");
-    for (File file : path.toFile().listFiles()) {
-      return path.resolve(file.getName()).resolve("bin").toFile();
-    }
-    return path.resolve("3.0").resolve("bin").toFile();
-  }
+	/**
+	 * Get the Qt binary creator
+	 */
+	public final File getBinaryCreator() {
+		String binarycreator = isWindows() ? "binarycreator.exe" : "binarycreator";
+		return new File(getInstallerBin(), binarycreator);
+	}
+
+	public static boolean isWindows() {
+		String osName = System.getProperty("os.name");
+		return Qt.containsIgnoreCase(osName, "windows");
+	}
+
+	private static boolean containsIgnoreCase(String text, String value) {
+		return text != null && value != null && text.toLowerCase().contains(value.toLowerCase());
+	}
 }

@@ -31,7 +31,7 @@ def gitRevision = { ->
 project.ext.gitRevision = gitRevision()
 
 group = 'tol.info.gocd.plugin'
-version = '0.0.86'
+version = '0.0.89'
 
 // these values that go into plugin.xml
 project.ext.pluginDesc = [
