@@ -31,11 +31,11 @@ def gitRevision = { ->
 project.ext.gitRevision = gitRevision()
 
 group = 'tol.info.gocd.plugin'
-version = '0.0.80'
+version = '0.0.86'
 
 // these values that go into plugin.xml
 project.ext.pluginDesc = [
-  id         : 'cd.go.task.setup',
+  id         : 'cd.go.task.package',
   version    : project.version,
   goCdVersion: '18.7.0',
   name       : 'Task plugin for Qt Installer',

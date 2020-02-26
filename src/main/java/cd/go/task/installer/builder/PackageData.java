@@ -24,61 +24,67 @@ import java.util.Map;
 import cd.go.task.installer.Packages;
 
 /**
- * The {@link PackageData} provides information about the data/ folder of a package. The
- * {@link PackageData} uses the module name and the data file to generate the structure on the
- * target folder
+ * The {@link PackageData} provides information about the data/ folder of a
+ * package. The {@link PackageData} uses the module name and the data file to
+ * generate the structure on the target folder
  */
 final class PackageData {
 
-  private final String name;
-  private final File   data;
-  private final String target;
+	private final String name;
+	private final File data;
+	private final String target;
 
-  /**
-   * Constructs an instance of {@link PackageData}.
-   *
-   * @param name
-   * @param data
-   * @param target
-   */
-  public PackageData(String name, File data, String target) {
-    this.name = name;
-    this.data = data;
-    this.target = target;
-  }
+	/**
+	 * Constructs an instance of {@link PackageData}.
+	 *
+	 * @param name
+	 * @param data
+	 * @param target
+	 */
+	public PackageData(String name, File data, String target) {
+		this.name = name;
+		this.data = data;
+		this.target = target;
+	}
 
-  /**
-   * Gets the package name.
-   */
-  public final String getName() {
-    return name;
-  }
+	/**
+	 * Gets the package name.
+	 */
+	public final String getName() {
+		return this.name;
+	}
 
-  /**
-   * Gets the source data file.
-   */
-  public final File getData() {
-    return data;
-  }
+	/**
+	 * Gets the source data file.
+	 */
+	public final File getData() {
+		return this.data;
+	}
 
-  /**
-   * Gets the target location.
-   */
-  public final String getTarget() {
-    return target;
-  }
+	/**
+	 * Gets the target location.
+	 */
+	public final String getTarget() {
+		return this.target;
+	}
 
-  public final void build(File workingDir, Map<String, String> environment) throws IOException {
-    Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
-    for (PathMatcher matcher : PathMatcher.of(getData(), environment)) {
-      // Copy the data to the build
-      Path path = workingPath.resolve(matcher.map(getTarget()));
-      path.toFile().getParentFile().mkdirs();
-      FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path, Collections.emptyMap());
+	/**
+	 * Build the /data folder for the package.
+	 *
+	 * @param workingDir
+	 * @param environment
+	 */
+	public final void build(File workingDir, Map<String, String> environment) throws IOException {
+		Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
+		for (PathMatcher matcher : PathMatcher.of(getData(), environment)) {
+			// Copy the data to the build
+			Path path = workingPath.resolve(matcher.map(getTarget()));
+			path.toFile().getParentFile().mkdirs();
+			FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path, Collections.emptyMap());
 
-      // Change the package info
-      PackageInfo info = new PackageInfo(workingDir, matcher.getEnvironment());
-      info.updatePackageInfo(getName());
-    }
-  }
+			// Change the package info
+			PackageInfo info = new PackageInfo(workingDir, matcher.getEnvironment());
+			info.updatePackageInfo(getName());
+		}
+	}
 }

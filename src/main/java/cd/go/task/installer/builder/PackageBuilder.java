@@ -30,133 +30,136 @@ import java.util.Map;
 import cd.go.task.installer.Packages;
 
 /**
- * The {@link PackageBuilder} is an utility class that creates the package structure for the
- * installer. The builder copies the meta data from a source directory and creates a build
- * directory.
+ * The {@link PackageBuilder} is an utility class that creates the package
+ * structure for the installer. The builder copies the meta data from a source
+ * directory and creates a build directory.
  * 
  * <pre>
- * -packages - com.vendor.root - data - meta - com.vendor.root.component1 - data - meta -
- * com.vendor.root.component1.subcomponent1 - data - meta - com.vendor.root.component2 - data - meta
+ * -packages - com.vendor.root - data - meta - com.vendor.root.component1 - data
+ * - meta - com.vendor.root.component1.subcomponent1 - data - meta -
+ * com.vendor.root.component2 - data - meta
  * 
  * <pre>
  */
 public class PackageBuilder {
 
-  private final File                workingDir;
-  private final Map<String, String> environment;
+	private final File workingDir;
+	private final Parameter parameters;
+	private final Map<String, String> environment;
 
+	private String packagePath;
+	private final List<PackageData> data = new ArrayList<>();
 
-  private String                  packagePath;
-  private final List<PackageData> data = new ArrayList<>();
+	/**
+	 * Constructs an instance of {@link PackageBuilder} for the working directory.
+	 *
+	 * @param workingDir
+	 * @param environment
+	 */
+	private PackageBuilder(File workingDir, Map<String, String> environment) {
+		this.workingDir = workingDir;
+		this.environment = environment;
+		this.environment.put(Packages.RELEASE_DATE, LocalDate.now().toString());
+		this.parameters = Parameter.of(environment);
+	}
 
-  /**
-   * Constructs an instance of {@link PackageBuilder} for the working directory.
-   *
-   * @param workingDir
-   * @param environment
-   */
-  private PackageBuilder(File workingDir, Map<String, String> environment) {
-    this.workingDir = workingDir;
-    this.environment = environment;
-    this.environment.put(Packages.RELEASE_DATE, LocalDate.now().toString());
-  }
+	/**
+	 * Set the path to the package definitions.
+	 *
+	 * @param packagePath
+	 */
+	public final void setPackagePath(String packagePath) {
+		this.packagePath = packagePath;
+	}
 
-  /**
-   * Set the path to the package definitions.
-   *
-   * @param packagePath
-   */
-  public final void setPackagePath(String packagePath) {
-    this.packagePath = packagePath;
-  }
+	/**
+	 * Add a package with the location of the package data.
+	 *
+	 * @param name
+	 * @param source
+	 * @param target
+	 */
+	public void addPackage(String name, File source, String target) {
+		this.data.add(new PackageData(parameters.replace(name), source, target));
+	}
 
-  /**
-   * Add a package with the location of the package data.
-   *
-   * @param name
-   * @param source
-   * @param target
-   */
-  public void addPackage(String name, File source, String target) {
-    this.data.add(new PackageData(name, source, target));
-  }
+	/**
+	 * Get the source path of the package definition.
+	 */
+	protected final Path getSourcePath() {
+		return workingDir.toPath().resolve(packagePath == null ? "packages" : packagePath);
+	}
 
-  /**
-   * Get the source path of the package definition.
-   */
-  protected final Path getSourcePath() {
-    return workingDir.toPath().resolve(packagePath == null ? "packages" : packagePath);
-  }
+	/**
+	 * Get the target path for the build package structure.
+	 */
+	protected final Path getTargetPath() {
+		return workingDir.toPath().resolve(Packages.BUILD).resolve(Packages.BUILD_PKG);
+	}
 
-  /**
-   * Get the target path for the build package structure.
-   */
-  protected final Path getTargetPath() {
-    return workingDir.toPath().resolve(Packages.BUILD).resolve(Packages.BUILD_PKG);
-  }
+	/**
+	 * Copy all package definitions of the module and its dependencies.
+	 *
+	 * @param name
+	 */
+	private void buildDependencies(String name) throws IOException {
+		Map<String, String> modules = new HashMap<>();
 
-  /**
-   * Copy all package definitions of the module and its dependencies.
-   *
-   * @param name
-   */
-  private void buildDependencies(String name) throws IOException {
-    Map<String, String> modules = new HashMap<>();
+		// Collect depending packages
+		for (File file : getSourcePath().toFile().listFiles()) {
+			String fileName = parameters.replace(file.getName());
+			File location = new File(getTargetPath().toFile(), fileName);
+			if (name.contains(fileName) && !location.exists()) {
+				modules.put(file.getName(), fileName);
+			}
+		}
 
-    // Collect depending packages
-    for (File file : getSourcePath().toFile().listFiles()) {
-      String pkgName = Parameter.of(environment).replace(file.getName());
-      File location = new File(getTargetPath().toFile(), pkgName);
-      if (name.contains(pkgName) && !location.exists()) {
-        modules.put(file.getName(), pkgName);
-      }
-    }
+		// Process defined packages
+		for (Map.Entry<String, String> module : modules.entrySet()) {
+			Path sourcePath = getSourcePath().resolve(module.getKey());
+			Path targetPath = getTargetPath().resolve(module.getValue());
 
-    // Process defined packages
-    for (Map.Entry<String, String> module : modules.entrySet()) {
-      Path sourcePath = getSourcePath().resolve(module.getKey());
-      Path targetPath = getTargetPath().resolve(module.getValue());
+			targetPath.toFile().mkdirs();
+			FileTreeCopying.copyFileTree(sourcePath, targetPath, environment);
+			File meta = new File(targetPath.toFile(), Packages.META);
+			for (File file : meta.listFiles()) {
+				String data = new String(Files.readAllBytes(file.toPath()));
+				try (Writer writer = new FileWriter(file)) {
+					writer.write(parameters.replace(data));
+				}
+			}
+		}
+	}
 
-      targetPath.toFile().mkdirs();
-      FileTreeCopying.copyFileTree(sourcePath, targetPath, environment);
-      File meta = new File(targetPath.toFile(), Packages.META);
-      for (File file : meta.listFiles()) {
-        String data = new String(Files.readAllBytes(file.toPath()));
-        try (Writer writer = new FileWriter(file)) {
-          writer.write(Parameter.of(environment).replace(data));
-        }
-      }
-    }
-  }
+	/**
+	 * Build a package structure for the {@link PackagesBuilder}. The method expects
+	 * a source file/folder, the {@link Version} information and the relative
+	 * installation path.
+	 *
+	 * Update the meta/package.xml with the actual version and release date.
+	 *
+	 * @param source
+	 * @param version
+	 * @param relativePath
+	 */
+	public final void build() throws Exception {
+		for (PackageData data : this.data) {
+			buildDependencies(data.getName());
+		}
 
-  /**
-   * Build a package structure for the {@link PackagesBuilder}. The method expects a source
-   * file/folder, the {@link Version} information and the relative installation path.
-   *
-   * Update the meta/package.xml with the actual version and release date.
-   *
-   * @param source
-   * @param version
-   * @param relativePath
-   */
-  public final void build() throws Exception {
-    for (PackageData data : this.data) {
-      buildDependencies(data.getName());
-    }
+		for (PackageData data : this.data) {
+			data.build(getTargetPath().toFile(), environment);
+		}
+	}
 
-    for (PackageData data : this.data) {
-      data.build(getTargetPath().toFile(), environment);
-    }
-  }
-
-  /**
-   * Constructs an instance of {@link PackagesBuilder}, providing the working directory and the
-   * environment variables.
-   *
-   * @param workingDir
-   * @param environment
-   */
-  public static PackageBuilder of(File workingDir, Map<String, String> environment) {
-    return new PackageBuilder(workingDir, environment);
-  }
+	/**
+	 * Constructs an instance of {@link PackagesBuilder}, providing the working
+	 * directory and the environment variables.
+	 *
+	 * @param workingDir
+	 * @param environment
+	 */
+	public static PackageBuilder of(File workingDir, Map<String, String> environment) {
+		return new PackageBuilder(workingDir, environment);
+	}
 }
