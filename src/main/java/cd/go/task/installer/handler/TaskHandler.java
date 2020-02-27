@@ -114,6 +114,9 @@ public class TaskHandler implements RequestHandler {
         case "OFFLINE":
         case "INSTALLER":
           process = createInstaller(task, mode, source, target, module);
+          console.readErrorOf(process.getErrorStream());
+          console.readOutputOf(process.getInputStream());
+
           exitCode = process.waitFor();
           process.destroy();
           return (exitCode == 0) ? TaskResponse.success("Executed the build").toResponse()

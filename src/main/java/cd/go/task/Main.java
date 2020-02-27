@@ -21,7 +21,7 @@ public class Main {
     environment.put("RELEASE", RELEASE);
     environment.put("QT_HOME", "/data/Software/Qt/5.12.4");
 
-//    Main.buildPackages(workingDir, environment);
+    Main.buildPackages(workingDir, environment);
     // Main.buildRepository(workingDir, environment);
     // Main.buildInstaller(workingDir, environment);
   }
@@ -64,11 +64,12 @@ public class Main {
   protected static void buildInstaller(File workingDir, Map<String, String> environment) throws Exception {
     File repogen = Qt.of(environment).getBinaryCreator();
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-    String config = "config/config.xml";
+    String config = "config/config-online.xml";
 
     // "-n" online only
     // "-f" offline only
-    List<String> command = Arrays.asList(repogen.getAbsolutePath(), "-c", config, "-f", "-p", packages, "Installer");
+    List<String> command =
+        Arrays.asList(repogen.getAbsolutePath(), "-c", config, "-n", "-p", packages, "OnlineInstaller");
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.directory(new File(workingDir.getAbsolutePath()));
     builder.environment().putAll(environment);

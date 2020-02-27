@@ -74,7 +74,7 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
 
   private FileVisitResult visitPath(Path path, BasicFileAttributes attrs) {
     String input = workingPath.relativize(path).toString();
-    Matcher matcher = pattern.matcher(input);
+    Matcher matcher = pattern.matcher(input.replace('\\', '/')); // for windows matches
     if (matcher.find()) {
       Map<String, String> e = new HashMap<>(environment);
       e.putAll(Parameter.getParameters(matcher, names));
