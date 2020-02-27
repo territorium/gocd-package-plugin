@@ -13,72 +13,68 @@ import cd.go.task.installer.builder.PackageBuilder;
 
 public class Main {
 
-	private static final String RELEASE = "20.01";
+  private static final String RELEASE = "20.01";
 
-	public static void main(String[] args) throws Exception {
-		File workingDir = new File("/data/smartIO/develop/installer");
-		Map<String, String> environment = new HashMap<String, String>();
-		environment.put("RELEASE", RELEASE);
-		environment.put("QT_HOME", "/data/Software/Qt/5.12.3");
+  public static void main(String[] args) throws Exception {
+    File workingDir = new File("/data/smartIO/develop/installer");
+    Map<String, String> environment = new HashMap<String, String>();
+    environment.put("RELEASE", RELEASE);
+    environment.put("QT_HOME", "/data/Software/Qt/5.12.4");
 
-//		Main.buildPackages(workingDir, environment);
-//		Main.buildRepository(workingDir, environment);
-		Main.buildInstaller(workingDir, environment);
-	}
+//    Main.buildPackages(workingDir, environment);
+    // Main.buildRepository(workingDir, environment);
+    // Main.buildInstaller(workingDir, environment);
+  }
 
-	protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
-		PackageBuilder builder = PackageBuilder.of(workingDir, environment);
-		builder.setPackagePath("packages2");
-		builder.addPackage("tol.$RELEASE.linux",
-				new File(workingDir, "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+)"), "$RELEASE");
-		builder.addPackage("tol.$RELEASE.windows",
-				new File(workingDir, "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+)"), "$RELEASE");
+  protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
+    PackageBuilder builder = PackageBuilder.of(workingDir, environment);
+    builder.setPackagePath("packages2");
+    builder.addPackage("tol.$RELEASE.server.linux", workingDir, "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+)",
+        "$RELEASE");
+    builder.addPackage("tol.$RELEASE.server.win64", workingDir, "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+)",
+        "$RELEASE");
 
-		builder.addPackage("tol.$RELEASE.client.web",
-				new File(workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+)/smartio"),
-				"$RELEASE/webapps/client/smartio-$VERSION");
-		builder.addPackage("tol.$RELEASE.client.android",
-				new File(workingDir, "download/smartIO-Android-(?<VERSION>[0-9.\\-]+).apk"),
-				"$RELEASEwebapps/client/smartio-$VERSION.apk");
-		builder.addPackage("tol.$RELEASE.client.ios",
-				new File(workingDir, "download/smartIO-iOS-(?<VERSION>[0-9.\\-]+).ipa"),
-				"$RELEASE/webapps/client/smartio-$VERSION.ipa");
-		builder.addPackage("tol.$RELEASE.server",
-				new File(workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+)"), "$RELEASE/webapps/smartio");
-		builder.build();
-	}
+    builder.addPackage("tol.$RELEASE.webapp", workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+)",
+        "$RELEASE/webapps/smartio");
 
-	protected static void buildRepository(File workingDir, Map<String, String> environment) throws Exception {
-		File repogen = Qt.of(environment).getRepogen();
-		String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-		String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
+    builder.addPackage("tol.$RELEASE.app.web", workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+)/smartio",
+        "$RELEASE/webapps/client/smartio-$VERSION");
+    builder.addPackage("tol.$RELEASE.app.android", workingDir, "download/smartIO-Android-(?<VERSION>[0-9.\\-]+).apk",
+        "$RELEASEwebapps/client/smartio-$VERSION.apk");
+    builder.addPackage("tol.$RELEASE.app.ios", workingDir, "download/smartIO-iOS-(?<VERSION>[0-9.\\-]+).ipa",
+        "$RELEASE/webapps/client/smartio-$VERSION.ipa");
+    builder.build();
+  }
 
-		List<String> command = Arrays.asList(repogen.getAbsolutePath(), "--update", "-p", packages, repository);
-		ProcessBuilder builder = new ProcessBuilder(command);
-		builder.directory(new File(workingDir.getAbsolutePath()));
-		builder.environment().putAll(environment);
+  protected static void buildRepository(File workingDir, Map<String, String> environment) throws Exception {
+    File repogen = Qt.of(environment).getRepogen();
+    String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
+    String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
 
-		Process process = builder.start();
-		int exitCode = process.waitFor();
-		process.destroy();
-	}
+    List<String> command = Arrays.asList(repogen.getAbsolutePath(), "--update", "-p", packages, repository);
+    ProcessBuilder builder = new ProcessBuilder(command);
+    builder.directory(new File(workingDir.getAbsolutePath()));
+    builder.environment().putAll(environment);
 
-	protected static void buildInstaller(File workingDir, Map<String, String> environment) throws Exception {
-		File repogen = Qt.of(environment).getBinaryCreator();
-		String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-		String config = "config/config_online.xml";
+    Process process = builder.start();
+    process.waitFor();
+    process.destroy();
+  }
 
-		// "-n" online only
-		// "-f" offline only
-		List<String> command = Arrays.asList(repogen.getAbsolutePath(), "-n", "-c", config, "-p", packages,
-				"Installer");
-		ProcessBuilder builder = new ProcessBuilder(command);
-		builder.directory(new File(workingDir.getAbsolutePath()));
-		builder.environment().putAll(environment);
+  protected static void buildInstaller(File workingDir, Map<String, String> environment) throws Exception {
+    File repogen = Qt.of(environment).getBinaryCreator();
+    String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
+    String config = "config/config.xml";
 
-		Process process = builder.start();
-		int exitCode = process.waitFor();
-		process.destroy();
-	}
+    // "-n" online only
+    // "-f" offline only
+    List<String> command = Arrays.asList(repogen.getAbsolutePath(), "-c", config, "-f", "-p", packages, "Installer");
+    ProcessBuilder builder = new ProcessBuilder(command);
+    builder.directory(new File(workingDir.getAbsolutePath()));
+    builder.environment().putAll(environment);
 
+    Process process = builder.start();
+    process.waitFor();
+    process.destroy();
+  }
 }

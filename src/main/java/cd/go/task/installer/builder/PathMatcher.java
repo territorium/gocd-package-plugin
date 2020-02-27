@@ -81,7 +81,8 @@ class PathMatcher {
    *
    * @param workingPath
    */
-  public static List<PathMatcher> of(File data, Map<String, String> environment) throws IOException {
-    return FileTreeMatcher.findFileTreeMatches(data, environment);
+  public static List<PathMatcher> of(File workingDir, Map<String, String> environment, String pattern)
+      throws IOException {
+    return FileTreeMatcher.findFileTreeMatches(workingDir, environment, pattern);
   }
 }

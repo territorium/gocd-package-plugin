@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 /**
  * The {@link Parameter} class.
  */
-class Parameter {
+public class Parameter {
 
   private static final Pattern NAMES  = Pattern.compile("\\(\\?<([a-z][a-z_0-9]*)>", Pattern.CASE_INSENSITIVE);
   private static final Pattern PARAMS = Pattern.compile("\\$([0-9]+|[a-z][a-z_0-9]*)", Pattern.CASE_INSENSITIVE);
