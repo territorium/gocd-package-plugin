@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 
 import cd.go.task.installer.Packages;
+import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageBuilder} is an utility class that creates the package structure for the
@@ -42,12 +43,12 @@ import cd.go.task.installer.Packages;
  */
 public class PackageBuilder {
 
-  private final File                workingDir;
-  private final Parameter           parameters;
-  private final Map<String, String> environment;
+  private final File        workingDir;
+  private final Environment environment;
 
-  private String                    packagePath;
-  private final List<PackageData>   data = new ArrayList<>();
+
+  private String                  packagePath;
+  private final List<PackageData> data = new ArrayList<>();
 
   /**
    * Constructs an instance of {@link PackageBuilder} for the working directory.
@@ -55,11 +56,9 @@ public class PackageBuilder {
    * @param workingDir
    * @param environment
    */
-  private PackageBuilder(File workingDir, Map<String, String> environment) {
+  private PackageBuilder(File workingDir, Environment environment) {
     this.workingDir = workingDir;
     this.environment = environment;
-    this.environment.put(Packages.RELEASE_DATE, LocalDate.now().toString());
-    this.parameters = Parameter.of(environment);
   }
 
   /**
@@ -79,7 +78,15 @@ public class PackageBuilder {
    * @param target
    */
   public void addPackage(String name, File workingDir, String source, String target) {
-    this.data.add(new PackageData(parameters.replace(name), workingDir, source, target));
+    String moduleName = environment.replace(name);
+    this.data.add(new PackageData(moduleName, workingDir, source, target));
+  }
+
+  /**
+   * Get the list of {@link PackageData}.
+   */
+  protected final List<PackageData> packageData() {
+    return this.data;
   }
 
   /**
@@ -106,10 +113,10 @@ public class PackageBuilder {
 
     // Collect depending packages
     for (File file : getSourcePath().toFile().listFiles()) {
-      String fileName = parameters.replace(file.getName());
-      File location = new File(getTargetPath().toFile(), fileName);
-      if (name.contains(fileName) && !location.exists()) {
-        modules.put(file.getName(), fileName);
+      String moduleName = environment.replace(file.getName());
+      File location = new File(getTargetPath().toFile(), moduleName);
+      if (name.contains(moduleName) && !location.exists()) {
+        modules.put(file.getName(), moduleName);
       }
     }
 
@@ -124,7 +131,7 @@ public class PackageBuilder {
       for (File file : meta.listFiles()) {
         String data = new String(Files.readAllBytes(file.toPath()));
         try (Writer writer = new FileWriter(file)) {
-          writer.write(parameters.replace(data));
+          writer.write(environment.replace(data));
         }
       }
     }
@@ -141,11 +148,11 @@ public class PackageBuilder {
    * @param relativePath
    */
   public final void build() throws Exception {
-    for (PackageData data : this.data) {
+    for (PackageData data : packageData()) {
       buildDependencies(data.getName());
     }
 
-    for (PackageData data : this.data) {
+    for (PackageData data : packageData()) {
       data.build(getTargetPath().toFile(), environment);
     }
   }
@@ -158,6 +165,7 @@ public class PackageBuilder {
    * @param environment
    */
   public static PackageBuilder of(File workingDir, Map<String, String> environment) {
-    return new PackageBuilder(workingDir, environment);
+    Environment env = Environment.of(environment).set(Packages.RELEASE_DATE, LocalDate.now().toString());
+    return new PackageBuilder(workingDir, env);
   }
 }

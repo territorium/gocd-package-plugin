@@ -27,9 +27,9 @@ import java.util.List;
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
 import cd.go.task.installer.builder.PackageBuilder;
-import cd.go.task.installer.builder.Parameter;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
+import cd.go.task.util.Environment;
 import cd.go.task.util.RequestHandler;
 
 /**
@@ -81,10 +81,10 @@ public class TaskHandler implements RequestHandler {
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
     String mode = task.getConfig().getValue("mode");
-    String modulePath = task.getConfig().getValue("path");
     String module = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
+    String packagePath = task.getConfig().getValue("path");
 
     console.printLine("Launching command on: " + task.getWorkingDirectory());
     console.printEnvironment(task.getEnvironment());
@@ -94,7 +94,7 @@ public class TaskHandler implements RequestHandler {
       switch (mode) {
         case "PACKAGE":
           PackageBuilder builder = PackageBuilder.of(workingDir, task.getEnvironment());
-          builder.setPackagePath(modulePath);
+          builder.setPackagePath(packagePath);
           builder.addPackage(module, workingDir, source, target);
           builder.build();
           break;
@@ -219,7 +219,7 @@ public class TaskHandler implements RequestHandler {
     File workingDir = new File(task.getWorkingDirectory());
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
 
-    String text = Parameter.of(task.getEnvironment()).replace(modules);
+    String text = Environment.of(task.getEnvironment()).replace(modules);
     List<String> list = new ArrayList<>(Arrays.asList(text.split(",")));
 
     for (File file : new File(workingDir, packages).listFiles()) {

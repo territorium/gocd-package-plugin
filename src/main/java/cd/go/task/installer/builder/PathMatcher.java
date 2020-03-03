@@ -18,9 +18,9 @@ package cd.go.task.installer.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import cd.go.task.util.Environment;
 
 /**
  * The {@link PathMatcher} is an utility that get all files that match the path pattern. The
@@ -29,8 +29,8 @@ import java.util.Map;
  */
 class PathMatcher {
 
-  private final File                file;
-  private final Map<String, String> environment;
+  private final File        file;
+  private final Environment environment;
 
   /**
    * Constructs an instance of {@link PathMatcher}.
@@ -38,7 +38,7 @@ class PathMatcher {
    * @param file
    * @param environment
    */
-  PathMatcher(File file, Map<String, String> environment) {
+  PathMatcher(File file, Environment environment) {
     this.file = file;
     this.environment = environment;
   }
@@ -55,8 +55,8 @@ class PathMatcher {
    *
    * @param name
    */
-  public final Map<String, String> getEnvironment() {
-    return new HashMap<>(environment);
+  public final Environment getEnvironment() {
+    return environment;
   }
 
   /**
@@ -65,7 +65,7 @@ class PathMatcher {
    * @param pattern
    */
   public final String map(String pattern) {
-    return Parameter.of(environment).replaceByPattern(pattern);
+    return environment.replaceByPattern(pattern);
   }
 
   /**
@@ -81,8 +81,7 @@ class PathMatcher {
    *
    * @param workingPath
    */
-  public static List<PathMatcher> of(File workingDir, Map<String, String> environment, String pattern)
-      throws IOException {
+  public static List<PathMatcher> of(File workingDir, Environment environment, String pattern) throws IOException {
     return FileTreeMatcher.findFileTreeMatches(workingDir, environment, pattern);
   }
 }

@@ -18,10 +18,9 @@ package cd.go.task.installer.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.Map;
 
 import cd.go.task.installer.Packages;
+import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageData} provides information about the data/ folder of a package. The
@@ -83,13 +82,13 @@ final class PackageData {
    * @param workingDir
    * @param environment
    */
-  public final void build(File workingDir, Map<String, String> environment) throws IOException {
+  public final void build(File workingDir, Environment environment) throws IOException {
     Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
     for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, getSource())) {
       // Copy the data to the build
       Path path = workingPath.resolve(matcher.map(getTarget()));
       path.toFile().getParentFile().mkdirs();
-      FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path, Collections.emptyMap());
+      FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
 
       // Change the package info
       PackageInfo info = new PackageInfo(workingDir, matcher.getEnvironment());

@@ -13,21 +13,21 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package cd.go.task.installer.builder;
+package cd.go.task.util;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * The {@link Parameter} class.
+ * The {@link Environment} provides a mapping to environment variables. The {@link Environment}
+ * allows to update text parts, containing parameters, with the environment variables.
  */
-public class Parameter {
+public class Environment {
 
   private static final Pattern NAMES  = Pattern.compile("\\(\\?<([a-z][a-z_0-9]*)>", Pattern.CASE_INSENSITIVE);
   private static final Pattern PARAMS = Pattern.compile("\\$([0-9]+|[a-z][a-z_0-9]*)", Pattern.CASE_INSENSITIVE);
@@ -36,37 +36,75 @@ public class Parameter {
   private final Map<String, String> environment;
 
   /**
-   * Constructs an instance of {@link Parameter}.
+   * Constructs an instance of {@link Environment}.
    * 
    * @param environment
    */
-  private Parameter(Map<String, String> environment) {
+  private Environment(Map<String, String> environment) {
     this.environment = environment;
+  }
+
+  /**
+   * Set a new parameter to the {@link Environment}.
+   */
+  public final Map<String, String> get() {
+    return this.environment;
+  }
+
+  /**
+   * <code>true</code> if the parameter is set.
+   *
+   * @param name
+   */
+  public final boolean isSet(String name) {
+    return environment.containsKey(name);
+  }
+
+  /**
+   * Get a parameter by name.
+   *
+   * @param name
+   */
+  public final String get(String name) {
+    return environment.get(name);
+  }
+
+  /**
+   * Set a new parameter to the {@link Environment}.
+   *
+   * @param name
+   * @param value
+   */
+  public final Environment set(String name, String value) {
+    environment.put(name, value);
+    return this;
   }
 
   /**
    * Replace all parameters that have values in the environment.
    *
    * @param input
+   * @param normalize
    */
   public final String replace(String input) {
-    String text = input;
-    Matcher matcher = Parameter.PARAMS.matcher(input);
-    while (matcher.find() && environment.containsKey(matcher.group(1))) {
-      String key = matcher.group(1);
-      text = text.replace("$" + key, environment.get(key));
-    }
-    return text;
+    return replace(input, (k, v) -> v);
   }
 
   /**
    * Replace all parameters that have values in the environment.
    *
-   * @param path
-   * @param environment
+   * @param input
+   * @param normalize
    */
-  public final Path replace(Path path) {
-    return Paths.get(replace(path.toString()));
+  public final String replace(String input, BiFunction<String, String, String> function) {
+    String text = input;
+    Matcher matcher = Environment.PARAMS.matcher(input);
+    while (matcher.find() && environment.containsKey(matcher.group(1))) {
+      String key = matcher.group(1);
+      String value = function.apply(key, environment.get(key));
+      text = text.replace("$" + key, value);
+    }
+    return text;
   }
 
   /**
@@ -78,7 +116,7 @@ public class Parameter {
     StringBuffer buffer = new StringBuffer();
     int offset = 0;
 
-    Matcher matcher = Parameter.PARAMS.matcher(pattern);
+    Matcher matcher = Environment.PARAMS.matcher(pattern);
     while (matcher.find()) {
       String name = matcher.group(1);
       String value = environment.get(name);
@@ -101,7 +139,7 @@ public class Parameter {
    */
   public static Set<String> getGroupNames(String pattern) {
     Set<String> names = new HashSet<>();
-    Matcher matcher = Parameter.NAMES.matcher(pattern);
+    Matcher matcher = Environment.NAMES.matcher(pattern);
     while (matcher.find()) {
       names.add(matcher.group(1));
     }
@@ -127,11 +165,37 @@ public class Parameter {
   }
 
   /**
-   * Constructs an instance of {@link Parameter}.
+   * Constructs an instance of {@link Environment}.
+   */
+  public final Environment clone() {
+    return Environment.of(environment);
+  }
+
+  /**
+   * Constructs an instance of {@link Environment}.
+   * 
+   * @param params
+   */
+  public final Environment clone(Map<String, String> params) {
+    Environment environment = this.clone();
+    environment.environment.putAll(params);
+    return environment;
+  }
+
+  /**
+   * Constructs an instance of {@link Environment}.
    * 
    * @param environment
    */
-  public static Parameter of(Map<String, String> environment) {
-    return new Parameter(environment);
+  public static Environment of(Map<String, String> environment) {
+    return new Environment(new HashMap<>(environment));
+  }
+
+  /**
+   * Constructs an empty instance of {@link Environment}.
+   * 
+   */
+  public static Environment empty() {
+    return new Environment(new HashMap<>());
   }
 }

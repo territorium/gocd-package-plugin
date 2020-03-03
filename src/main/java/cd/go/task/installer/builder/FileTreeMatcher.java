@@ -23,24 +23,24 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import cd.go.task.util.Environment;
 
 /**
  * The {@link FileTreeMatcher} class.
  */
 class FileTreeMatcher extends SimpleFileVisitor<Path> {
 
-  private final Path                workingPath;
-  private final Map<String, String> environment;
+  private final Path              workingPath;
+  private final Environment       environment;
 
-  private final Pattern             pattern;
-  private final Set<String>         names;
-  private final List<PathMatcher>   mappers = new ArrayList<>();
+  private final Pattern           pattern;
+  private final Set<String>       names;
+  private final List<PathMatcher> mappers = new ArrayList<>();
 
   /**
    * Constructs an instance of {@link FileTreeMatcher}.
@@ -48,11 +48,11 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
    * @param workingDir
    * @param pattern
    */
-  private FileTreeMatcher(File workingDir, Map<String, String> environment, String pattern) {
+  private FileTreeMatcher(File workingDir, Environment environment, String pattern) {
     this.workingPath = workingDir.toPath();
     this.environment = environment;
     this.pattern = Pattern.compile("^" + pattern + "$");
-    this.names = Parameter.getGroupNames(pattern);
+    this.names = Environment.getGroupNames(pattern);
   }
 
   /**
@@ -76,8 +76,7 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
     String input = workingPath.relativize(path).toString();
     Matcher matcher = pattern.matcher(input.replace('\\', '/')); // for windows matches
     if (matcher.find()) {
-      Map<String, String> e = new HashMap<>(environment);
-      e.putAll(Parameter.getParameters(matcher, names));
+      Environment e = environment.clone(Environment.getParameters(matcher, names));
       mappers.add(new PathMatcher(path.toFile(), e));
       return FileVisitResult.SKIP_SUBTREE;
     }
@@ -90,7 +89,7 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
    * @param workingDir
    * @param environment
    */
-  public static List<PathMatcher> findFileTreeMatches(File workingDir, Map<String, String> environment, String pattern)
+  public static List<PathMatcher> findFileTreeMatches(File workingDir, Environment environment, String pattern)
       throws IOException {
     FileTreeMatcher visitor = new FileTreeMatcher(workingDir, environment, pattern);
     Files.walkFileTree(workingDir.toPath(), visitor);

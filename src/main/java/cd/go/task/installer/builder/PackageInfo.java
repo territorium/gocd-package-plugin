@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
-import java.util.Map;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -32,6 +31,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import cd.go.task.installer.Packages;
+import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageInfo} is a helper class to manage the meta/package.xml file.
@@ -56,8 +56,8 @@ class PackageInfo {
   private static final Path   PACKAGE      = Paths.get("meta", "package.xml");
 
 
-  private final File                workingDir;
-  private final Map<String, String> environment;
+  private final File        workingDir;
+  private final Environment environment;
 
   /**
    * Constructs an instance of {@link PackageInfo}.
@@ -65,7 +65,7 @@ class PackageInfo {
    * @param workingDir
    * @param environment
    */
-  PackageInfo(File workingDir, Map<String, String> environment) {
+  PackageInfo(File workingDir, Environment environment) {
     this.workingDir = workingDir;
     this.environment = environment;
   }
@@ -96,10 +96,10 @@ class PackageInfo {
     String version = null;
     String relaseDate = null;
 
-    if (environment.containsKey(Packages.VERSION)) {
+    if (environment.isSet(Packages.VERSION)) {
       version = Version.parse(environment.get(Packages.VERSION)).toString("0.0.0-0");
     }
-    if (environment.containsKey(Packages.RELEASE_DATE)) {
+    if (environment.isSet(Packages.RELEASE_DATE)) {
       relaseDate = environment.get(Packages.RELEASE_DATE);
     }
 
