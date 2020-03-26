@@ -95,9 +95,13 @@ class PackageInfo {
     boolean ignore = false;
     String version = null;
     String relaseDate = null;
+    String pattern = "0.0.0-0";
 
+    if (environment.isSet(Packages.PATTERN)) {
+      pattern = environment.get(Packages.PATTERN);
+    }
     if (environment.isSet(Packages.VERSION)) {
-      version = Version.parse(environment.get(Packages.VERSION)).toString("0.0.0-0");
+      version = Version.parse(environment.get(Packages.VERSION)).toString(pattern);
     }
     if (environment.isSet(Packages.RELEASE_DATE)) {
       relaseDate = environment.get(Packages.RELEASE_DATE);

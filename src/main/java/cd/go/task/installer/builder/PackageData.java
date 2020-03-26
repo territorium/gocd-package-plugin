@@ -18,6 +18,7 @@ package cd.go.task.installer.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import cd.go.task.installer.Packages;
 import cd.go.task.util.Environment;
@@ -72,8 +73,10 @@ final class PackageData {
   /**
    * Gets the target location.
    */
-  public final String getTarget() {
-    return this.target;
+  public final String getTarget(Environment environment) {
+    String basePath = environment.get(Packages.PACKAGE);
+    String target = (this.target == null) ? "" : this.target;
+    return (basePath == null) ? target : Paths.get(basePath, target).toString();
   }
 
   /**
@@ -86,7 +89,7 @@ final class PackageData {
     Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
     for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, getSource())) {
       // Copy the data to the build
-      Path path = workingPath.resolve(matcher.map(getTarget()));
+      Path path = workingPath.resolve(matcher.map(getTarget(environment)));
       path.toFile().getParentFile().mkdirs();
       FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
 

@@ -14,14 +14,18 @@ import cd.go.task.installer.builder.PackageBuilder;
 public class Main {
 
   private static final String MODULE  = "2004dev";
-  private static final String RELEASE = "20.04-dev";
+  private static final String PATTERN = "0.0-0";
+  private static final String RELEASE = "20.04";
+  private static final String PACKAGE = "20.04-dev";
 
   public static void main(String[] args) throws Exception {
     File workingDir = new File("/data/smartIO/develop/installer");
     Map<String, String> environment = new HashMap<String, String>();
     environment.put("MODULE", MODULE);
+    environment.put("PATTERN", PATTERN);
     environment.put("RELEASE", RELEASE);
-    environment.put("QT_HOME", "/data/Software/Qt/5.12.4");
+    environment.put("PACKAGE", PACKAGE);
+    environment.put("QT_HOME", "/data/Software/Qt/5.12.7");
 
     Main.buildPackages(workingDir, environment);
     // Main.buildRepository(workingDir, environment);
@@ -31,20 +35,20 @@ public class Main {
   protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
     PackageBuilder builder = PackageBuilder.of(workingDir, environment);
     builder.setPackagePath("packages2");
-    builder.addPackage("tol.$MODULE.server.linux", workingDir, "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+)",
-        "$RELEASE");
-    builder.addPackage("tol.$MODULE.server.win64", workingDir, "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+)",
-        "$RELEASE");
+    builder.addPackage("tol.$MODULE.server_linux", workingDir, "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+)",
+        "");
+    builder.addPackage("tol.$MODULE.server_win64", workingDir, "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+)",
+        "");
 
     builder.addPackage("tol.$MODULE.webapp", workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+)",
-        "$RELEASE/webapps/smartio");
+        "webapps/smartio");
 
     builder.addPackage("tol.$MODULE.app.web", workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+)/smartio",
-        "$RELEASE/webapps/client/smartio-$VERSION");
+        "webapps/client/smartio-$VERSION");
     builder.addPackage("tol.$MODULE.app.android", workingDir, "download/smartIO-Android-(?<VERSION>[0-9.\\-]+).apk",
-        "$RELEASEwebapps/client/smartio-$VERSION.apk");
+        "webapps/client/smartio-$VERSION.apk");
     builder.addPackage("tol.$MODULE.app.ios", workingDir, "download/smartIO-iOS-(?<VERSION>[0-9.\\-]+).ipa",
-        "$RELEASE/webapps/client/smartio-$VERSION.ipa");
+        "webapps/client/smartio-$VERSION.ipa");
     builder.build();
   }
 

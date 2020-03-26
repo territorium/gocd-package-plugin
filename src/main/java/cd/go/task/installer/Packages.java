@@ -21,9 +21,11 @@ package cd.go.task.installer;
  */
 public interface Packages {
 
+  String PATTERN      = "PATTERN";
   String VERSION      = "VERSION";
   String RELEASE      = "RELEASE";
   String RELEASE_DATE = "RELEASE_DATE";
+  String PACKAGE      = "PACKAGE";
 
   String META         = "meta";
   String DATA         = "data";
