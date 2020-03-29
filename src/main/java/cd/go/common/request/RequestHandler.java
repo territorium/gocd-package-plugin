@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 ThoughtWorks, Inc.
+ * Copyright 2018 ThoughtWorks, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,12 +12,17 @@
  * the License.
  */
 
-package cd.go.task.util;
+package cd.go.common.request;
 
-public interface Request {
+import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
+import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
-  String TASK_VIEW     = "view";
-  String TASK_CONFIG   = "configuration";
-  String TASK_VALIDATE = "validate";
-  String TASK_EXECUTE  = "execute";
+public interface RequestHandler {
+
+  /**
+   * Handles a request and provides a response.
+   *
+   * @param request
+   */
+  GoPluginApiResponse handle(GoPluginApiRequest request) throws Exception;
 }

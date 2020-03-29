@@ -35,15 +35,15 @@ public class Main {
   protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
     PackageBuilder builder = PackageBuilder.of(workingDir, environment);
     builder.setPackagePath("packages2");
-    builder.addPackage("tol.$MODULE.server_linux", workingDir, "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+)",
-        "");
-    builder.addPackage("tol.$MODULE.server_win64", workingDir, "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+)",
-        "");
+    builder.addPackage("tol.$MODULE.server_linux", workingDir,
+        "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+).tar.gz", "");
+    builder.addPackage("tol.$MODULE.server_win64", workingDir,
+        "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+).zip", "");
 
-    builder.addPackage("tol.$MODULE.webapp", workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+)",
+    builder.addPackage("tol.$MODULE.webapp", workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+).war",
         "webapps/smartio");
 
-    builder.addPackage("tol.$MODULE.app.web", workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+)/smartio",
+    builder.addPackage("tol.$MODULE.app.web", workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+).zip!smartio",
         "webapps/client/smartio-$VERSION");
     builder.addPackage("tol.$MODULE.app.android", workingDir, "download/smartIO-Android-(?<VERSION>[0-9.\\-]+).apk",
         "webapps/client/smartio-$VERSION.apk");

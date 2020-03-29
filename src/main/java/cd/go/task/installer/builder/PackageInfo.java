@@ -30,8 +30,8 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
-import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageInfo} is a helper class to manage the meta/package.xml file.

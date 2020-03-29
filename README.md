@@ -12,25 +12,43 @@ All the documentation is hosted at https://plugin-api.gocd.io/current/tasks.
 
 The packaging plugin is used to create package structures for the Qt Installer. The configuration allow different operations:
 
-### Initialize
+- *Package*: Creates the package structure consumed by the installer
+- *Repository*: Creates an online repository
+- *Installer (Online/Offline)*: Creates the installer, optionally package-ing for an offline installer.
 
-The initialize operation creates the local package structure for the packaging. The task requires a single configuration parameter:
 
-- The *Module Path* defines the location, from where the structure should be copied and initialized.
+The plugin uses different environment variables:
+
+- *RELEASE*: Defines the release version for the global installer (e.g. 20.04).
+- *MODULE*: Defines the package name for the namespace (e.g. 2004dev), this identifies the package globally. The name must be without spaces and special characters
+- *PACKAGE*: This optional parameter defines the relative target directory, where the software should be installerd (e.g. 20.04-dev).
+- *PATTERN*: Defines the version pattern, containing MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits.
+
 
 ### Package
 
-The package is the principal process to create the structure of a package. The process copies the installable content to the *data* folder. Different options can be used.
+The package is the principal process to create the structure of a package. The process copies the install-able content to the *data* folder. Different options can be used.
 
-- The *Module Name* defines the name of the module to package.
-- The *Source Pattern* defines a path pattern from where the content should be copied. The pattern allows to use named regular expression, that can be used as parameters for the processing of the package; e.g.: *smartIO-iOS-(?&lt;VERSION&gt;[0-9.\-]+).ipa* , the ?&lt;VERSION&gt; defines the name of parameter.
-- The *Target Pattern* defines a path pattern to define the target in the *data* folder. The pattern allows to use parameters as placeholders to replace parts of the path with the parameters catched from the source pattern or the environment; e.g.: *smartio-$VERSION.ipa*
-
-
+- *Package Path*: Defines the directory from where the package meta informations are loaded. (e.g. packages)
+- *Module Name*: Defines the module name to prepare for packaging. The module name can hold contain parameters, that are replaced by environment variables, e.g. tol.$MODULE.app.web
+- *Data Source Pattern*: Defines the directory or file used to copy in the data folder of the package. If the pattern declares an archive (.zip, .tar, .war, .tar.gz), the archive will be un-packed. Optionally it is possible to define a path inside the archive, if only a subset should be packaged, e.g. *download/smartIO-Web.zip!smartio*. The pattern can define named regular expression, which are provided to the environment, e.g. *smartIO-Web-(?<VERSION>[0-9.\-]+).zip* will provide the version number as *VERSION* in the environment.
+- *Data Target Pattern*: Defines the relative target directory in the data folder. You can use environment variables to create the directory or file, e.g. *webapps/client/smartio-$VERSION*.
 
 ### Repository
 
 The repository process creates the structure for the remote repository. All files contained in the repository should be upload to a remote repository, from where an online installer can consume the information. The process doesn't use any option.
+
+- *Module Name*: Optionally defines a comma separated list of the modules to used for the repository. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packges are provided.
+
+
+### Installer
+
+The installer process creates an online/offline installer (or both).
+
+- *Module Name*: Optionally defines a comma separated list of the modules to used for the installer. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packages are provided.
+- *Data Source Pattern*: Defines the configuration file for the installer, e.g. *config/config.xml*.
+- *Data Target Pattern*: Defines the name of the installer, e.g. *Installer*.
+
 
 ## Building the code base
 

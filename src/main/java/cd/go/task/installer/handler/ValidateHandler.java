@@ -12,16 +12,20 @@
  * the License.
  */
 
-package cd.go.task.handler;
+package cd.go.task.installer.handler;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Predicate;
+
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import cd.go.task.util.RequestHandler;
+import cd.go.common.request.RequestHandler;
 
 /**
  * This message is sent by the GoCD server to the plugin to validate if the settings entered by the
@@ -31,44 +35,43 @@ import cd.go.task.util.RequestHandler;
  *
  * <pre>
  * {
- *   "URL": {
- *     "secure": false,
- *     "value": "http://localhost.com",
- *     "required": true
- *   },
- *   "USERNAME": {
- *     "secure": false,
- *     "value": "user",
- *     "required": false
- *   },
- *   "PASSWORD": {
- *     "secure": true,
- *     "value": "password",
- *     "required": false
- *   }
+ * "RegistryURL": "https://index.docker.io/v1/",
+ * "Username": "boohoo"
  * }
  * </pre>
  *
  * An error response body
  *
  * <pre>
- * {
- *   "errors": {
- *     "URL": "URL is not well formed",
- *     "USERNAME": "Invalid character present"
- *   }
- * }
- * </pre>
- *
- * An valid response body
- *
- * <pre>
- * {
- *   "errors": {}
- * }
+ * [
+ *     {
+ *         "key": "SCM_URL",
+ *         "message": "SCM URL not specified"
+ *     },
+ *     {
+ *         "key": "RANDOM",
+ *         "message": "Unsupported key(s) found : RANDOM. Allowed key(s) are : SCM_URL, USERNAME, PASSWORD"
+ *     }
+ * ]
  * </pre>
  */
 public class ValidateHandler implements RequestHandler {
+
+  private final Map<String, Predicate<String>> rules    = new HashMap<>();
+  private final Map<String, String>            messages = new HashMap<>();
+
+  /**
+   * Add an validation rule.
+   * 
+   * @param target
+   * @param predicate
+   * @param message
+   */
+  public final ValidateHandler addRule(String target, Predicate<String> predicate, String message) {
+    rules.put(target, predicate);
+    messages.put(target, message);
+    return this;
+  }
 
   /**
    * Handles a request and provides a response.

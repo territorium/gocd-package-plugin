@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cd.go.task.util.Environment;
+import cd.go.common.util.Environment;
 
 /**
  * The {@link FileTreeMatcher} class.

@@ -19,9 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import cd.go.common.util.Archive;
+import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
-import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageData} provides information about the data/ folder of a package. The
@@ -29,6 +32,9 @@ import cd.go.task.util.Environment;
  * target folder
  */
 final class PackageData {
+
+  private static final Pattern ARCHIVES = Pattern.compile("(([^#]+)(?:\\.zip|\\.tar(?:\\.gz)|\\.war))(?:[!#](.+))?");
+
 
   private final String name;
   private final File   workingDir;
@@ -86,8 +92,21 @@ final class PackageData {
    * @param environment
    */
   public final void build(File workingDir, Environment environment) throws IOException {
+    String source = getSource();
+
+    // Check archives that can be uncompressed (.zip, .tar, .tar.gz, .war)
+    Matcher match = ARCHIVES.matcher(source);
+    if (match.find()) {
+      for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, match.group(1))) {
+        Archive.unpack(matcher.getFile());
+      }
+      source = match.group(2);
+      if (match.group(3) != null)
+        source += File.separator + match.group(3);
+    }
+
     Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
-    for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, getSource())) {
+    for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, source)) {
       // Copy the data to the build
       Path path = workingPath.resolve(matcher.map(getTarget(environment)));
       path.toFile().getParentFile().mkdirs();

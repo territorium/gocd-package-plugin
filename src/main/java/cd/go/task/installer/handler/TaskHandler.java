@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cd.go.common.request.RequestHandler;
+import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
 import cd.go.task.installer.builder.PackageBuilder;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
-import cd.go.task.util.Environment;
-import cd.go.task.util.RequestHandler;
 
 /**
  * This message is sent by the GoCD agent to the plugin to execute the task.

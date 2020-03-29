@@ -13,7 +13,7 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package cd.go.task.util;
+package cd.go.common.util;
 
 import java.util.HashMap;
 import java.util.HashSet;

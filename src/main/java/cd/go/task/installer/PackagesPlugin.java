@@ -26,11 +26,11 @@ import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.util.Arrays;
 
-import cd.go.task.handler.ValidateHandler;
-import cd.go.task.handler.ViewHandler;
+import cd.go.common.request.Request;
+import cd.go.common.request.ViewHandler;
 import cd.go.task.installer.handler.ConfigHandler;
 import cd.go.task.installer.handler.TaskHandler;
-import cd.go.task.util.Request;
+import cd.go.task.installer.handler.ValidateHandler;
 
 /**
  * GoPlugin interface represents Go plugin. It is necessary to implement this interface for any

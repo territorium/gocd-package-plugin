@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
-import cd.go.task.util.Environment;
 
 /**
  * The {@link PackageBuilder} is an utility class that creates the package structure for the

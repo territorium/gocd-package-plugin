@@ -24,7 +24,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import cd.go.task.util.Environment;
+import cd.go.common.util.Environment;
 
 /**
  * The {@link FileTreeCopying} copies a directory structure from source to the target path.

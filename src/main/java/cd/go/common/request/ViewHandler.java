@@ -12,7 +12,7 @@
  * the License.
  */
 
-package cd.go.task.handler;
+package cd.go.common.request;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.DefaultGoPluginApiResponse;
@@ -21,8 +21,7 @@ import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
 
-import cd.go.task.util.RequestHandler;
-import cd.go.task.util.Resources;
+import cd.go.common.util.Resources;
 
 /**
  * This message is sent by the GoCD server to the plugin to get an AngularJS based HTML template to
@@ -39,6 +38,10 @@ import cd.go.task.util.Resources;
  * @param template
  */
 public class ViewHandler implements RequestHandler {
+
+  private static final String DISPLAY  = "displayValue";
+  private static final String TEMPLATE = "template";
+
 
   private final String display;
   private final String template;
@@ -62,8 +65,8 @@ public class ViewHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     JsonObjectBuilder object = Json.createObjectBuilder();
-    object.add("displayValue", display);
-    object.add("template", Resources.readString(template));
+    object.add(ViewHandler.DISPLAY, display);
+    object.add(ViewHandler.TEMPLATE, Resources.readString(template));
     return DefaultGoPluginApiResponse.success(object.build().toString());
   }
 }

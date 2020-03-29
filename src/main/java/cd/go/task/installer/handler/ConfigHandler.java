@@ -17,8 +17,8 @@ package cd.go.task.installer.handler;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 
+import cd.go.common.request.RequestHandler;
 import cd.go.task.model.ConfigResponse;
-import cd.go.task.util.RequestHandler;
 
 /**
  * This message is sent by the GoCD server to the plugin to know what properties are supported by
