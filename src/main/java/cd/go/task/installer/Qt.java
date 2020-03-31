@@ -16,46 +16,73 @@
 package cd.go.task.installer;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * The {@link Qt} is a helper class working on the environment to the QT HOME directory.
  */
-public class Qt {
+public abstract class Qt {
 
   private static final String QT_HOME = "QT_HOME";
 
 
-  private final File workingDir;
+  private final File                home;
+  private final File                workingDir;
+  private final Map<String, String> environment;
+
+
+  private String             packages;
+  private final List<String> modules = new ArrayList<>();
+
 
   /**
    * Constructs an instance of {@link Qt}.
    *
    * @param workingDir
+   * @param environment
    */
-  private Qt(File workingDir) {
+  protected Qt(File workingDir, Map<String, String> environment) {
+    this.home = new File(environment.get(Qt.QT_HOME));
     this.workingDir = workingDir;
+    this.environment = environment;
   }
 
   /**
    * Get the Qt HOME directory
    */
-  public final File getQtHome() {
-    return workingDir;
+  protected final File getQtHome() {
+    return home;
   }
 
   /**
    * Get the Qt BASE directory
    */
-  public final File getQtBase() {
+  protected final File getQtBase() {
     return getQtHome().getParentFile();
+  }
+
+  /**
+   * @return the workingDir
+   */
+  protected final File getWorkingDir() {
+    return workingDir;
+  }
+
+  /**
+   * @return the environment
+   */
+  protected final Map<String, String> getEnvironment() {
+    return environment;
   }
 
   /**
    * Get the QtInstallerFramework binary
    */
-  public final File getInstallerBin() {
+  protected final File getInstallerBin() {
     Path path = getQtBase().toPath().resolve("Tools").resolve("QtInstallerFramework");
     for (File file : path.toFile().listFiles()) {
       return path.resolve(file.getName()).resolve("bin").toFile();
@@ -66,7 +93,7 @@ public class Qt {
   /**
    * Get the Qt repository generator
    */
-  public final File getRepositoryGenerator() {
+  protected final File getRepositoryGenerator() {
     String repogen = Qt.isWindows() ? "repogen.exe" : "repogen";
     return new File(getInstallerBin(), repogen);
   }
@@ -74,7 +101,7 @@ public class Qt {
   /**
    * Get the Qt binary creator
    */
-  public final File getBinaryCreator() {
+  protected final File getBinaryCreator() {
     String binarycreator = Qt.isWindows() ? "binarycreator.exe" : "binarycreator";
     return new File(getInstallerBin(), binarycreator);
   }
@@ -85,11 +112,48 @@ public class Qt {
   }
 
   /**
-   * Constructs an instance of {@link Qt}.
-   *
-   * @param environment
+   * Set the package path.
    */
-  public static Qt of(Map<String, String> environment) {
-    return new Qt(new File(environment.get(Qt.QT_HOME)));
+  public final Qt setPackagePath(String packages) {
+    this.packages = packages;
+    return this;
+  }
+
+  /**
+   * Add the a list of modules.
+   * 
+   * @param modules
+   */
+  public final Qt addModules(List<String> modules) {
+    this.modules.addAll(modules);
+    return this;
+  }
+
+  /**
+   * Create an abstract command for the Qt {@link Process}.
+   */
+  protected List<String> getCommand() {
+    List<String> command = new ArrayList<String>();
+
+    // Define include modules
+    if (!modules.isEmpty()) {
+      command.add("-i");
+      command.add(String.join(",", modules));
+    }
+    command.add("-p");
+    command.add(packages);
+    return command;
+  }
+
+  /**
+   * Build the Qt {@link Process}.
+   * 
+   * @throws IOException
+   */
+  public final Process build() throws IOException {
+    ProcessBuilder builder = new ProcessBuilder(getCommand());
+    builder.directory(new File(getWorkingDir().getAbsolutePath()));
+    builder.environment().putAll(getEnvironment());
+    return builder.start();
   }
 }

@@ -22,14 +22,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import cd.go.common.archive.Archiver;
 import cd.go.common.request.RequestHandler;
 import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
-import cd.go.task.installer.Qt;
+import cd.go.task.installer.QtInstaller;
+import cd.go.task.installer.QtRepoGen;
 import cd.go.task.installer.builder.PackageBuilder;
 import cd.go.task.model.TaskRequest;
 import cd.go.task.model.TaskResponse;
@@ -62,6 +63,10 @@ import cd.go.task.model.TaskResponse;
  * </pre>
  */
 public class TaskHandler implements RequestHandler {
+
+  private static final String PACKAGE_PATH    = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
+  private static final String REPOSITORY_PATH = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
+
 
   private final JobConsoleLogger console;
 
@@ -102,7 +107,7 @@ public class TaskHandler implements RequestHandler {
           break;
 
         case "REPOSITORY":
-          Process process = createRepogen(task, mode, source, target, module);
+          Process process = createRepogen(task, mode, target, parseModules(task, module));
           console.readErrorOf(process.getErrorStream());
           console.readOutputOf(process.getInputStream());
 
@@ -128,7 +133,7 @@ public class TaskHandler implements RequestHandler {
         case "ONLINE":
         case "OFFLINE":
         case "INSTALLER":
-          process = createInstaller(task, mode, source, target, module);
+          process = createInstaller(task, target, mode, source, parseModules(task, module));
           console.readErrorOf(process.getErrorStream());
           console.readOutputOf(process.getInputStream());
 
@@ -157,77 +162,38 @@ public class TaskHandler implements RequestHandler {
    * @param target
    * @param modules
    */
-  protected Process createRepogen(TaskRequest task, String mode, String source, String target, String modules)
+  protected Process createRepogen(TaskRequest task, String mode, String target, List<String> modules)
       throws IOException {
-    Qt environment = Qt.of(task.getEnvironment());
     File workingDir = new File(task.getWorkingDirectory());
 
-    String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-    String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
 
-    List<String> command = new ArrayList<String>();
-    command.add(environment.getRepositoryGenerator().getAbsolutePath());
-
-    if (modules != null && !modules.trim().isEmpty()) {
-      command.add("-i");
-      command.add(getModules(workingDir, task.getEnvironment(), modules));
-    }
-
-    command.add("--update");
-    command.add("-p");
-    command.add(packages);
-    command.add(repository);
-
-    ProcessBuilder builder = new ProcessBuilder(command);
-    builder.directory(workingDir);
-    builder.environment().putAll(task.getEnvironment());
-    return builder.start();
+    QtRepoGen builder = QtRepoGen.of(workingDir, task.getEnvironment());
+    builder.setUpdate();
+    builder.addModules(modules);
+    builder.setPackagePath(TaskHandler.PACKAGE_PATH);
+    builder.setRepositoryPath(TaskHandler.REPOSITORY_PATH);
+    return builder.build();
   }
 
   /**
    * Create an installer.
    * 
    * @param task
+   * @param name
    * @param mode
-   * @param source
-   * @param target
+   * @param config
    * @param modules
    */
-  protected Process createInstaller(TaskRequest task, String mode, String source, String target, String modules)
+  protected Process createInstaller(TaskRequest task, String name, String mode, String config, List<String> modules)
       throws IOException {
-    String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-
-    Qt environment = Qt.of(task.getEnvironment());
     File workingDir = new File(task.getWorkingDirectory());
 
-    List<String> command = new ArrayList<String>();
-    command.add(environment.getBinaryCreator().getAbsolutePath());
-    switch (mode) {
-      case "ONLINE":
-        command.add("-n");
-        break;
-      case "OFFLINE":
-        command.add("-f");
-        break;
-      default:
-    }
-
-    if (modules != null && !modules.trim().isEmpty()) {
-      command.add("-i");
-      command.add(getModules(workingDir, task.getEnvironment(), modules));
-    }
-
-    command.add("-c");
-    command.add(source);
-    command.add("-p");
-    command.add(packages);
-    command.add(target);
-
-
-    ProcessBuilder builder = new ProcessBuilder(command);
-    builder.directory(new File(workingDir.getAbsolutePath()));
-    builder.environment().putAll(task.getEnvironment());
-    return builder.start();
+    QtInstaller builder = QtInstaller.of(workingDir, task.getEnvironment());
+    builder.setName(name).setMode(mode);
+    builder.setConfig(config);
+    builder.addModules(modules);
+    builder.setPackagePath(TaskHandler.PACKAGE_PATH);
+    return builder.build();
   }
 
   /**
@@ -236,18 +202,20 @@ public class TaskHandler implements RequestHandler {
    * @param task
    * @param modules
    */
-  protected String getModules(File workingDir, Map<String, String> environment, String modules) {
-    String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
+  protected List<String> parseModules(TaskRequest task, String modules) {
+    if (modules == null) {
+      return Collections.emptyList();
+    }
 
-    String text = Environment.of(environment).replace(modules);
+    String text = Environment.of(task.getEnvironment()).replace(modules);
     List<String> list = new ArrayList<>(Arrays.asList(text.split(",")));
 
-    for (File file : new File(workingDir, packages).listFiles()) {
+    for (File file : new File(task.getWorkingDirectory(), TaskHandler.PACKAGE_PATH).listFiles()) {
       for (String item : text.split(",")) {
         if (!list.contains(file.getName()) && item.startsWith(file.getName()))
           list.add(file.getName());
       }
     }
-    return String.join(",", list);
+    return list;
   }
 }
