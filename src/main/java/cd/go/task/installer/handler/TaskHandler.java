@@ -23,9 +23,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import cd.go.common.archive.Archiver;
 import cd.go.common.request.RequestHandler;
-import cd.go.common.util.Archive;
 import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
@@ -121,7 +122,7 @@ public class TaskHandler implements RequestHandler {
               console.printLine("File '" + entry + "' doesn't exists");
             }
           }
-          Archive.tar(new File(workingDir, target), files);
+          Archiver.of(new File(workingDir, target)).archive(files);
           return TaskResponse.success("Assemply created").toResponse();
 
         case "ONLINE":
@@ -158,15 +159,18 @@ public class TaskHandler implements RequestHandler {
    */
   protected Process createRepogen(TaskRequest task, String mode, String source, String target, String modules)
       throws IOException {
+    Qt environment = Qt.of(task.getEnvironment());
+    File workingDir = new File(task.getWorkingDirectory());
+
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
     String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
 
     List<String> command = new ArrayList<String>();
-    command.add(Qt.of(task.getEnvironment()).getRepogen().getAbsolutePath());
+    command.add(environment.getRepositoryGenerator().getAbsolutePath());
 
     if (modules != null && !modules.trim().isEmpty()) {
       command.add("-i");
-      command.add(getModules(task, modules));
+      command.add(getModules(workingDir, task.getEnvironment(), modules));
     }
 
     command.add("--update");
@@ -175,7 +179,7 @@ public class TaskHandler implements RequestHandler {
     command.add(repository);
 
     ProcessBuilder builder = new ProcessBuilder(command);
-    builder.directory(new File(task.getWorkingDirectory()));
+    builder.directory(workingDir);
     builder.environment().putAll(task.getEnvironment());
     return builder.start();
   }
@@ -191,11 +195,13 @@ public class TaskHandler implements RequestHandler {
    */
   protected Process createInstaller(TaskRequest task, String mode, String source, String target, String modules)
       throws IOException {
-    File workingDir = new File(task.getWorkingDirectory());
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
 
+    Qt environment = Qt.of(task.getEnvironment());
+    File workingDir = new File(task.getWorkingDirectory());
+
     List<String> command = new ArrayList<String>();
-    command.add(Qt.of(task.getEnvironment()).getBinaryCreator().getAbsolutePath());
+    command.add(environment.getBinaryCreator().getAbsolutePath());
     switch (mode) {
       case "ONLINE":
         command.add("-n");
@@ -208,7 +214,7 @@ public class TaskHandler implements RequestHandler {
 
     if (modules != null && !modules.trim().isEmpty()) {
       command.add("-i");
-      command.add(getModules(task, modules));
+      command.add(getModules(workingDir, task.getEnvironment(), modules));
     }
 
     command.add("-c");
@@ -216,6 +222,7 @@ public class TaskHandler implements RequestHandler {
     command.add("-p");
     command.add(packages);
     command.add(target);
+
 
     ProcessBuilder builder = new ProcessBuilder(command);
     builder.directory(new File(workingDir.getAbsolutePath()));
@@ -229,11 +236,10 @@ public class TaskHandler implements RequestHandler {
    * @param task
    * @param modules
    */
-  protected String getModules(TaskRequest task, String modules) {
-    File workingDir = new File(task.getWorkingDirectory());
+  protected String getModules(File workingDir, Map<String, String> environment, String modules) {
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
 
-    String text = Environment.of(task.getEnvironment()).replace(modules);
+    String text = Environment.of(environment).replace(modules);
     List<String> list = new ArrayList<>(Arrays.asList(text.split(",")));
 
     for (File file : new File(workingDir, packages).listFiles()) {

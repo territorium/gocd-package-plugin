@@ -11,7 +11,7 @@ import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
 import cd.go.task.installer.builder.PackageBuilder;
 
-public class Main2 {
+public class Main {
 
   private static final String MODULE  = "2004dev";
   private static final String PATTERN = "0.0-0";
@@ -19,7 +19,7 @@ public class Main2 {
   private static final String PACKAGE = "20.04-dev";
 
   public static void main(String[] args) throws Exception {
-    File workingDir = new File("/data/smartIO/test");
+    File workingDir = new File("/data/smartIO/develop/installer");
     Map<String, String> environment = new HashMap<String, String>();
     environment.put("MODULE", MODULE);
     environment.put("PATTERN", PATTERN);
@@ -27,22 +27,34 @@ public class Main2 {
     environment.put("PACKAGE", PACKAGE);
     environment.put("QT_HOME", "/data/Software/Qt/5.12.7");
 
-    Main2.buildPackages(workingDir, environment);
+    Main.buildPackages(workingDir, environment);
     // Main.buildRepository(workingDir, environment);
     // Main.buildInstaller(workingDir, environment);
   }
 
   protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
     PackageBuilder builder = PackageBuilder.of(workingDir, environment);
-    builder.setPackagePath("installer/packages2");
-    builder.addPackage("com.microsoft.vcredist", workingDir, "msvc/vc_redist.x64.exe", "vc_redist.x64.exe");
-    builder.addPackage("tol.tools_win64", workingDir, "qt/qt-5.12.4-msvc-lite.zip", "tools");
-    builder.addPackage("tol.tools_win64", workingDir, "qt/qt-5.12.4-msvc-lite.zip", "tools");
+    builder.setPackagePath("packages2");
+    
+    builder.addPackage("tol.$MODULE.server_linux", workingDir,
+        "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+).tar.gz", "");
+    builder.addPackage("tol.$MODULE.server_win64", workingDir,
+        "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+).zip", "");
+
+    builder.addPackage("tol.$MODULE.webapp", workingDir, "download/smartIO-Server-(?<VERSION>[0-9.\\-]+).war",
+        "webapps/smartio");
+
+    builder.addPackage("tol.$MODULE.app.web", workingDir, "download/smartIO-Web-(?<VERSION>[0-9.\\-]+).zip!smartio",
+        "webapps/smartIO/smartio");
+    builder.addPackage("tol.$MODULE.app.android", workingDir, "download/smartIO-Android-(?<VERSION>[0-9.\\-]+).apk",
+        "webapps/client/smartio-$VERSION.apk");
+    builder.addPackage("tol.$MODULE.app.ios", workingDir, "download/smartIO-iOS-(?<VERSION>[0-9.\\-]+).ipa",
+        "webapps/client/smartio-$VERSION.ipa");
     builder.build();
   }
 
   protected static void buildRepository(File workingDir, Map<String, String> environment) throws Exception {
-    File repogen = Qt.of(environment).getRepogen();
+    File repogen = Qt.of(environment).getRepositoryGenerator();
     String packages = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
     String repository = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
 

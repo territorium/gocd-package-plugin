@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cd.go.common.util.Archive;
+import cd.go.common.archive.Archiver;
 import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
 
@@ -95,7 +95,7 @@ final class PackageData {
     Matcher match = ARCHIVES.matcher(source);
     if (match.find()) {
       for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, match.group(1))) {
-        Archive.unpack(matcher.getFile());
+        Archiver.of(matcher.getFile()).extract();
       }
       source = match.group(2);
       if (match.group(3) != null)

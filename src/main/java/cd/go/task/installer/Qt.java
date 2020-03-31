@@ -20,28 +20,29 @@ import java.nio.file.Path;
 import java.util.Map;
 
 /**
- * The {@link Qt} class.
+ * The {@link Qt} is a helper class working on the environment to the QT HOME directory.
  */
 public class Qt {
 
-  private static final String       QT_HOME = "QT_HOME";
+  private static final String QT_HOME = "QT_HOME";
 
-  private final Map<String, String> environment;
+
+  private final File workingDir;
 
   /**
    * Constructs an instance of {@link Qt}.
    *
-   * @param environment
+   * @param workingDir
    */
-  private Qt(Map<String, String> environment) {
-    this.environment = environment;
+  private Qt(File workingDir) {
+    this.workingDir = workingDir;
   }
 
   /**
    * Get the Qt HOME directory
    */
   public final File getQtHome() {
-    return new File(environment.get(Qt.QT_HOME));
+    return workingDir;
   }
 
   /**
@@ -63,10 +64,10 @@ public class Qt {
   }
 
   /**
-   * Get the Qt epository generator
+   * Get the Qt repository generator
    */
-  public final File getRepogen() {
-    String repogen = isWindows() ? "repogen.exe" : "repogen";
+  public final File getRepositoryGenerator() {
+    String repogen = Qt.isWindows() ? "repogen.exe" : "repogen";
     return new File(getInstallerBin(), repogen);
   }
 
@@ -74,17 +75,13 @@ public class Qt {
    * Get the Qt binary creator
    */
   public final File getBinaryCreator() {
-    String binarycreator = isWindows() ? "binarycreator.exe" : "binarycreator";
+    String binarycreator = Qt.isWindows() ? "binarycreator.exe" : "binarycreator";
     return new File(getInstallerBin(), binarycreator);
   }
 
-  public static boolean isWindows() {
+  private static boolean isWindows() {
     String osName = System.getProperty("os.name");
-    return Qt.containsIgnoreCase(osName, "windows");
-  }
-
-  private static boolean containsIgnoreCase(String text, String value) {
-    return text != null && value != null && text.toLowerCase().contains(value.toLowerCase());
+    return osName != null && osName.toLowerCase().contains("windows");
   }
 
   /**
@@ -93,6 +90,6 @@ public class Qt {
    * @param environment
    */
   public static Qt of(Map<String, String> environment) {
-    return new Qt(environment);
+    return new Qt(new File(environment.get(Qt.QT_HOME)));
   }
 }

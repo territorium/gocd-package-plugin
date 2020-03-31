@@ -22,6 +22,7 @@ The plugin uses different environment variables:
 - *RELEASE*: Defines the release version for the global installer (e.g. 20.04).
 - *MODULE*: Defines the package name for the namespace (e.g. 2004dev), this identifies the package globally. The name must be without spaces and special characters
 - *PATTERN*: Defines the version pattern, containing MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits.
+- *PACKAGE*: Defines package name for the title in the root package.
 
 
 ### Package
@@ -47,6 +48,15 @@ The installer process creates an online/offline installer (or both).
 - *Module Name*: Optionally defines a comma separated list of the modules to used for the installer. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packages are provided.
 - *Data Source Pattern*: Defines the configuration file for the installer, e.g. *config/config.xml*.
 - *Data Target Pattern*: Defines the name of the installer, e.g. *Installer*.
+
+
+
+### Assembly
+
+The installer process creates an archive (.zip, .tar, .tar.gz) from a list of files. All files are flatten in the archive.
+
+- *Data Source Pattern*: A comma separated list of files, that should by archived.
+- *Data Target Pattern*: The archive name, the task will recognize the archive type from the file name.
 
 
 ## Building the code base
