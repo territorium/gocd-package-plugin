@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import cd.go.common.request.RequestHandler;
+import cd.go.common.util.Archive;
 import cd.go.common.util.Environment;
 import cd.go.task.installer.Packages;
 import cd.go.task.installer.Qt;
@@ -109,6 +110,19 @@ public class TaskHandler implements RequestHandler {
           return (exitCode == 0) ? TaskResponse.success("Executed the build").toResponse()
               : TaskResponse.failure("Could not execute build! Process returned with status code " + exitCode)
                   .toResponse();
+
+        case "ASSEMBLY":
+          List<File> files = new ArrayList<>();
+          for (String entry : source.split(",")) {
+            File file = new File(workingDir, entry);
+            if (file.exists()) {
+              files.add(file);
+            } else {
+              console.printLine("File '" + entry + "' doesn't exists");
+            }
+          }
+          Archive.tar(new File(workingDir, target), files);
+          return TaskResponse.success("Assemply created").toResponse();
 
         case "ONLINE":
         case "OFFLINE":

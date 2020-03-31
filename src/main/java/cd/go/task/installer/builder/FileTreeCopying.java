@@ -50,14 +50,25 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
     this.environment = environment;
   }
 
+  /**
+   * Resolves the path.
+   * 
+   * @param path
+   */
   private final Path toPath(Path path) {
     Path relativePath = source.relativize(path);
     String pathName = environment.replace(relativePath.toString());
     return target.resolve(Paths.get(pathName));
   }
 
+  /**
+   * Visit a directory.
+   * 
+   * @param path
+   * @param attrs
+   */
   @Override
-  public FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
+  public final FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
     Path dir = toPath(path);
     if (!Files.exists(dir)) {
       Files.createDirectory(dir);
@@ -65,8 +76,14 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
     return FileVisitResult.CONTINUE;
   }
 
+  /**
+   * Visit a file.
+   * 
+   * @param path
+   * @param attrs
+   */
   @Override
-  public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+  public final FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
     Files.copy(path, toPath(path), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
     return FileVisitResult.CONTINUE;
   }

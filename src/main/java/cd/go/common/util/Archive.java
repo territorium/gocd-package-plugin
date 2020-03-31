@@ -14,8 +14,10 @@
 
 package cd.go.common.util;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 
 import java.io.File;
@@ -27,6 +29,7 @@ import java.io.OutputStream;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -152,6 +155,42 @@ public abstract class Archive {
       }
     }
     return untar(tar, target);
+  }
+
+  /**
+   * Tar the files to the target
+   * 
+   * @param target
+   * @param files
+   */
+  public static void tar(File target, List<File> files) throws IOException {
+    try (TarArchiveOutputStream stream = new TarArchiveOutputStream(new FileOutputStream(target))) {
+      for (File file : files) {
+        Archive.tar(file, stream, file.getName());
+      }
+    }
+  }
+
+  /**
+   * Add a file to the tar archive.
+   * 
+   * @param file
+   * @param stream
+   * @param filenname
+   */
+  private static void tar(File file, TarArchiveOutputStream stream, String filename) throws IOException {
+    if (file.isDirectory()) {
+      for (File item : file.listFiles()) {
+        tar(item, stream, filename + "/" + item.getName());
+      }
+    } else {
+      ArchiveEntry entry = stream.createArchiveEntry(file, filename);
+      stream.putArchiveEntry(entry);;
+      try (InputStream input = new FileInputStream(file)) {
+        stream.write(input.readAllBytes());
+      }
+      stream.closeArchiveEntry();
+    }
   }
 
   private static File newFile(File target, String name) throws IOException {

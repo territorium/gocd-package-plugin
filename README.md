@@ -21,7 +21,6 @@ The plugin uses different environment variables:
 
 - *RELEASE*: Defines the release version for the global installer (e.g. 20.04).
 - *MODULE*: Defines the package name for the namespace (e.g. 2004dev), this identifies the package globally. The name must be without spaces and special characters
-- *PACKAGE*: This optional parameter defines the relative target directory, where the software should be installerd (e.g. 20.04-dev).
 - *PATTERN*: Defines the version pattern, containing MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits.
 
 

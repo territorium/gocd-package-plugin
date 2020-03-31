@@ -25,7 +25,6 @@ public interface Packages {
   String VERSION      = "VERSION";
   String RELEASE      = "RELEASE";
   String RELEASE_DATE = "RELEASE_DATE";
-  String PACKAGE      = "PACKAGE";
 
   String META         = "meta";
   String DATA         = "data";

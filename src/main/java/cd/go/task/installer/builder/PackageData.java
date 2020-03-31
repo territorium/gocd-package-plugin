@@ -18,7 +18,6 @@ package cd.go.task.installer.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,7 +32,7 @@ import cd.go.task.installer.Packages;
  */
 final class PackageData {
 
-  private static final Pattern ARCHIVES = Pattern.compile("(([^#]+)(?:\\.zip|\\.tar(?:\\.gz)|\\.war))(?:[!#](.+))?");
+  private static final Pattern ARCHIVES = Pattern.compile("(([^#]+)(?:\\.zip|\\.tar(?:\\.gz)?|\\.war))(?:[!#](.+))?");
 
 
   private final String name;
@@ -80,9 +79,7 @@ final class PackageData {
    * Gets the target location.
    */
   public final String getTarget(Environment environment) {
-    String basePath = environment.get(Packages.PACKAGE);
-    String target = (this.target == null) ? "" : this.target;
-    return (basePath == null) ? target : Paths.get(basePath, target).toString();
+    return (this.target == null) ? "" : this.target;
   }
 
   /**
@@ -102,7 +99,7 @@ final class PackageData {
       }
       source = match.group(2);
       if (match.group(3) != null)
-        source += File.separator + match.group(3);
+        source += "/" + match.group(3);
     }
 
     Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
