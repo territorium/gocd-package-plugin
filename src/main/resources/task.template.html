@@ -1,5 +1,6 @@
-<div class="form_item_block">
-	<label>Mode:<span class="asterisk">*</span></label> <select
+<div class="form_item_block" tabindex="1">
+	<label>Mode:<span class="asterisk">*</span></label>
+	<select
 		ng-model="mode">
 		<option value="PACKAGE">Package</option>
 		<option value="REPOSITORY">Repository</option>
@@ -11,21 +12,21 @@
 </div>
 
 <div class="form_item_block">
-	<label>Package Path:</label> <input type="text" ng-model="path">
-	</input>
+	<label>Package Path:</label>
+	<input type="text" ng-model="path" tabindex="2"></input>
 </div>
 
 <div class="form_item_block">
-	<label>Module Name:</label> <input type="text" ng-model="module">
-	</input>
+	<label>Module Name / Config:</label>
+	<input type="text" ng-model="module" tabindex="3"></input>
 </div>
 
 <div class="form_item_block">
-	<label>Data Source Pattern:</label> <input type="text"
-		ng-model="source"> </input>
+	<label>Data Source Pattern:</label>
+    <textarea ng-model="source" ng-required="false" tabindex="4" rows="5"></textarea>
 </div>
 
 <div class="form_item_block">
-	<label>Data Target Pattern:</label> <input type="text"
-		ng-model="target"> </input>
+	<label>Data Target Pattern:</label>
+	<input type="text" ng-model="target" tabindex="5"></input>
 </div>

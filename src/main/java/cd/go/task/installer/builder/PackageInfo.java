@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Iterator;
 
 import javax.xml.stream.XMLEventReader;
@@ -31,7 +32,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import cd.go.common.util.Environment;
-import cd.go.task.installer.Packages;
+import cd.go.task.installer.Constants;
 
 /**
  * The {@link PackageInfo} is a helper class to manage the meta/package.xml file.
@@ -49,6 +50,7 @@ import cd.go.task.installer.Packages;
  * </pre>
  */
 class PackageInfo {
+
 
   private static final String VERSION      = "Version";
   private static final String RELEASE_DATE = "ReleaseDate";
@@ -94,17 +96,17 @@ class PackageInfo {
   protected final String readPackageInfo(File file) throws IOException {
     boolean ignore = false;
     String version = null;
-    String relaseDate = null;
     String pattern = "0.0.0-0";
+    String relaseDate = LocalDate.now().toString();
 
-    if (environment.isSet(Packages.PATTERN)) {
-      pattern = environment.get(Packages.PATTERN);
+    if (environment.isSet(Constants.ENV_PATTERN)) {
+      pattern = environment.get(Constants.ENV_PATTERN);
     }
-    if (environment.isSet(Packages.VERSION)) {
-      version = Version.parse(environment.get(Packages.VERSION)).toString(pattern);
+    if (environment.isSet(Constants.ENV_VERSION)) {
+      version = Version.parse(environment.get(Constants.ENV_VERSION)).toString(pattern);
     }
-    if (environment.isSet(Packages.RELEASE_DATE)) {
-      relaseDate = environment.get(Packages.RELEASE_DATE);
+    if (environment.isSet(Constants.ENV_RELEASE_DATE)) {
+      relaseDate = environment.get(Constants.ENV_RELEASE_DATE);
     }
 
     StringBuffer buffer = new StringBuffer();

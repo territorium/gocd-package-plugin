@@ -4,7 +4,8 @@ package cd.go.task.installer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import cd.go.common.util.Environment;
 
 public class QtInstaller extends Qt {
 
@@ -25,7 +26,7 @@ public class QtInstaller extends Qt {
    * @param workingDir
    * @param environment
    */
-  public QtInstaller(File workingDir, Map<String, String> environment) {
+  public QtInstaller(File workingDir, Environment environment) {
     super(workingDir, environment);
     this.mode = Mode.BOTH;
   }
@@ -90,7 +91,7 @@ public class QtInstaller extends Qt {
    * @param workingDir
    * @param environment
    */
-  public static QtInstaller of(File workingDir, Map<String, String> environment) {
+  public static QtInstaller of(File workingDir, Environment environment) {
     return new QtInstaller(workingDir, environment);
   }
 }

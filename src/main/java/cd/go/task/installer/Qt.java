@@ -20,7 +20,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import cd.go.common.util.Environment;
 
 /**
  * The {@link Qt} is a helper class working on the environment to the QT HOME directory.
@@ -30,9 +31,9 @@ public abstract class Qt {
   private static final String QT_HOME = "QT_HOME";
 
 
-  private final File                home;
-  private final File                workingDir;
-  private final Map<String, String> environment;
+  private final File        home;
+  private final File        workingDir;
+  private final Environment environment;
 
 
   private String             packages;
@@ -45,7 +46,7 @@ public abstract class Qt {
    * @param workingDir
    * @param environment
    */
-  protected Qt(File workingDir, Map<String, String> environment) {
+  protected Qt(File workingDir, Environment environment) {
     this.home = new File(environment.get(Qt.QT_HOME));
     this.workingDir = workingDir;
     this.environment = environment;
@@ -75,7 +76,7 @@ public abstract class Qt {
   /**
    * @return the environment
    */
-  protected final Map<String, String> getEnvironment() {
+  protected final Environment getEnvironment() {
     return environment;
   }
 
@@ -153,7 +154,7 @@ public abstract class Qt {
   public final Process build() throws IOException {
     ProcessBuilder builder = new ProcessBuilder(getCommand());
     builder.directory(new File(getWorkingDir().getAbsolutePath()));
-    builder.environment().putAll(getEnvironment());
+    builder.environment().putAll(getEnvironment().toMap());
     return builder.start();
   }
 }

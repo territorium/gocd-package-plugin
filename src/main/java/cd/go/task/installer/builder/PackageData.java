@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
 
 import cd.go.common.archive.Archiver;
 import cd.go.common.util.Environment;
-import cd.go.task.installer.Packages;
 
 /**
  * The {@link PackageData} provides information about the data/ folder of a package. The
@@ -102,7 +101,7 @@ final class PackageData {
         source += "/" + match.group(3);
     }
 
-    Path workingPath = workingDir.toPath().resolve(getName()).resolve(Packages.DATA);
+    Path workingPath = workingDir.toPath().resolve(getName()).resolve(PackageBuilder.DATA);
     for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, source)) {
       // Copy the data to the build
       Path path = workingPath.resolve(matcher.map(getTarget(environment)));

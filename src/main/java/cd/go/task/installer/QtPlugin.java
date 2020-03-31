@@ -37,9 +37,9 @@ import cd.go.task.installer.handler.ValidateHandler;
  * plugin implementation to be recognized as a Go plugin
  */
 @Extension
-public class PackagesPlugin implements GoPlugin {
+public class QtPlugin implements GoPlugin {
 
-  private static final Logger LOGGER = Logger.getLoggerFor(PackagesPlugin.class);
+  private static final Logger LOGGER = Logger.getLoggerFor(QtPlugin.class);
 
 
   /**
@@ -87,7 +87,7 @@ public class PackagesPlugin implements GoPlugin {
           throw new UnhandledRequestTypeException(request.requestName());
       }
     } catch (Exception e) {
-      PackagesPlugin.LOGGER.error("Error while executing request " + request.requestName(), e);
+      QtPlugin.LOGGER.error("Error while executing request " + request.requestName(), e);
       throw new RuntimeException(e);
     }
   }

@@ -22,13 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import cd.go.common.archive.Archiver;
 import cd.go.common.request.RequestHandler;
-import cd.go.common.util.Environment;
-import cd.go.task.installer.Packages;
+import cd.go.common.util.Assemply;
+import cd.go.task.installer.Constants;
 import cd.go.task.installer.QtInstaller;
 import cd.go.task.installer.QtRepoGen;
 import cd.go.task.installer.builder.PackageBuilder;
@@ -64,10 +62,6 @@ import cd.go.task.model.TaskResponse;
  */
 public class TaskHandler implements RequestHandler {
 
-  private static final String PACKAGE_PATH    = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-  private static final String REPOSITORY_PATH = String.join(File.separator, Packages.BUILD, Packages.BUILD_REPO);
-
-
   private final JobConsoleLogger console;
 
   /**
@@ -88,13 +82,13 @@ public class TaskHandler implements RequestHandler {
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
     String mode = task.getConfig().getValue("mode");
-    String module = task.getConfig().getValue("module");
+    String config = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
     String packagePath = task.getConfig().getValue("path");
 
     console.printLine("Launching command on: " + task.getWorkingDirectory());
-    console.printEnvironment(task.getEnvironment());
+    console.printEnvironment(task.getEnvironment().toMap());
 
     File workingDir = new File(task.getWorkingDirectory());
     try {
@@ -102,12 +96,12 @@ public class TaskHandler implements RequestHandler {
         case "PACKAGE":
           PackageBuilder builder = PackageBuilder.of(workingDir, task.getEnvironment());
           builder.setPackagePath(packagePath);
-          builder.addPackage(module, workingDir, source, target);
+          builder.addPackage(config, workingDir, source, target);
           builder.build();
           break;
 
         case "REPOSITORY":
-          Process process = createRepogen(task, mode, target, parseModules(task, module));
+          Process process = createRepogen(task, mode, target, toModules(task, source));
           console.readErrorOf(process.getErrorStream());
           console.readOutputOf(process.getInputStream());
 
@@ -118,22 +112,22 @@ public class TaskHandler implements RequestHandler {
                   .toResponse();
 
         case "ASSEMBLY":
-          List<File> files = new ArrayList<>();
-          for (String entry : source.split(",")) {
+          Assemply assemply = Assemply.of(new File(workingDir, target));
+          for (String entry : source.split("[,\\n]")) {
             File file = new File(workingDir, entry);
             if (file.exists()) {
-              files.add(file);
+              assemply.addFile(file);
             } else {
               console.printLine("File '" + entry + "' doesn't exists");
             }
           }
-          Archiver.of(new File(workingDir, target)).archive(files);
+          assemply.build();
           return TaskResponse.success("Assemply created").toResponse();
 
         case "ONLINE":
         case "OFFLINE":
         case "INSTALLER":
-          process = createInstaller(task, target, mode, source, parseModules(task, module));
+          process = createInstaller(task, target, mode, config, toModules(task, source));
           console.readErrorOf(process.getErrorStream());
           console.readOutputOf(process.getInputStream());
 
@@ -170,8 +164,8 @@ public class TaskHandler implements RequestHandler {
     QtRepoGen builder = QtRepoGen.of(workingDir, task.getEnvironment());
     builder.setUpdate();
     builder.addModules(modules);
-    builder.setPackagePath(TaskHandler.PACKAGE_PATH);
-    builder.setRepositoryPath(TaskHandler.REPOSITORY_PATH);
+    builder.setPackagePath(Constants.PATH_PACKAGE);
+    builder.setRepositoryPath(Constants.PATH_REPOSITORY);
     return builder.build();
   }
 
@@ -192,7 +186,7 @@ public class TaskHandler implements RequestHandler {
     builder.setName(name).setMode(mode);
     builder.setConfig(config);
     builder.addModules(modules);
-    builder.setPackagePath(TaskHandler.PACKAGE_PATH);
+    builder.setPackagePath(Constants.PATH_PACKAGE);
     return builder.build();
   }
 
@@ -200,22 +194,22 @@ public class TaskHandler implements RequestHandler {
    * Converts the modules with it's dependencies
    *
    * @param task
-   * @param modules
+   * @param text
    */
-  protected List<String> parseModules(TaskRequest task, String modules) {
-    if (modules == null) {
-      return Collections.emptyList();
-    }
+  protected List<String> toModules(TaskRequest task, String text) {
+    List<String> modules = new ArrayList<>();
+    if (text != null) {
+      for (String name : Arrays.asList(text.split(",\\n"))) {
+        modules.add(task.getEnvironment().replaceModuleName(name));
+      }
 
-    String text = Environment.of(task.getEnvironment()).replace(modules);
-    List<String> list = new ArrayList<>(Arrays.asList(text.split(",")));
-
-    for (File file : new File(task.getWorkingDirectory(), TaskHandler.PACKAGE_PATH).listFiles()) {
-      for (String item : text.split(",")) {
-        if (!list.contains(file.getName()) && item.startsWith(file.getName()))
-          list.add(file.getName());
+      for (File file : new File(task.getWorkingDirectory(), Constants.PATH_PACKAGE).listFiles()) {
+        for (String module : new ArrayList<>(modules)) {
+          if (!modules.contains(file.getName()) && module.startsWith(file.getName()))
+            modules.add(file.getName());
+        }
       }
     }
-    return list;
+    return modules;
   }
 }

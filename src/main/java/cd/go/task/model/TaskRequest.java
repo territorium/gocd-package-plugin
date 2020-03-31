@@ -18,11 +18,11 @@ package cd.go.task.model;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+
+import cd.go.common.util.Environment;
 
 /**
  * Get the request for a task execution.
@@ -53,10 +53,10 @@ import javax.json.JsonObject;
  */
 public class TaskRequest {
 
-  private String                    workingDirectory;
+  private String            workingDirectory;
 
-  private final TaskConfig          config      = new TaskConfig();
-  private final Map<String, String> environment = new HashMap<>();
+  private final TaskConfig  config      = new TaskConfig();
+  private final Environment environment = new Environment();
 
   /**
    * Gets the working directory.
@@ -68,7 +68,7 @@ public class TaskRequest {
   /**
    * Gets the environment variables
    */
-  public final Map<String, String> getEnvironment() {
+  public final Environment getEnvironment() {
     return environment;
   }
 
@@ -89,7 +89,7 @@ public class TaskRequest {
     workingDirectory = context.getString("workingDirectory");
 
     for (String name : environment.keySet()) {
-      this.environment.put(name, environment.getString(name));
+      this.environment.set(name, environment.getString(name));
     }
   }
 

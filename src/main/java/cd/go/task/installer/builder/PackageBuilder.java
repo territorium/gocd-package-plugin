@@ -21,14 +21,13 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import cd.go.common.util.Environment;
-import cd.go.task.installer.Packages;
+import cd.go.task.installer.Constants;
 
 /**
  * The {@link PackageBuilder} is an utility class that creates the package structure for the
@@ -42,6 +41,10 @@ import cd.go.task.installer.Packages;
  * <pre>
  */
 public class PackageBuilder {
+
+  public static final String META = "meta";
+  public static final String DATA = "data";
+
 
   private final File        workingDir;
   private final Environment environment;
@@ -78,7 +81,7 @@ public class PackageBuilder {
    * @param target
    */
   public void addPackage(String name, File workingDir, String source, String target) {
-    String moduleName = environment.replace(name);
+    String moduleName = environment.replaceModuleName(name);
     this.data.add(new PackageData(moduleName, workingDir, source, target));
   }
 
@@ -100,7 +103,7 @@ public class PackageBuilder {
    * Get the target path for the build package structure.
    */
   protected final Path getTargetPath() {
-    return workingDir.toPath().resolve(Packages.BUILD).resolve(Packages.BUILD_PKG);
+    return workingDir.toPath().resolve(Constants.PATH_PACKAGE);
   }
 
   /**
@@ -113,7 +116,7 @@ public class PackageBuilder {
 
     // Collect depending packages
     for (File file : getSourcePath().toFile().listFiles()) {
-      String moduleName = environment.replace(file.getName());
+      String moduleName = environment.replaceModuleName(file.getName());
       File location = new File(getTargetPath().toFile(), moduleName);
       if (name.contains(moduleName) && !location.exists()) {
         modules.put(file.getName(), moduleName);
@@ -126,12 +129,12 @@ public class PackageBuilder {
       Path targetPath = getTargetPath().resolve(module.getValue());
 
       targetPath.toFile().mkdirs();
-      FileTreeCopying.copyFileTree(sourcePath, targetPath, environment);
-      File meta = new File(targetPath.toFile(), Packages.META);
+      FileTreeCopying.copyFileTree(sourcePath, targetPath);
+      File meta = new File(targetPath.toFile(), PackageBuilder.META);
       for (File file : meta.listFiles()) {
         String data = new String(Files.readAllBytes(file.toPath()));
         try (Writer writer = new FileWriter(file)) {
-          writer.write(environment.replace(data));
+          writer.write(environment.replaceModuleName(data));
         }
       }
     }
@@ -164,8 +167,9 @@ public class PackageBuilder {
    * @param workingDir
    * @param environment
    */
-  public static PackageBuilder of(File workingDir, Map<String, String> environment) {
-    Environment env = Environment.of(environment).set(Packages.RELEASE_DATE, LocalDate.now().toString());
-    return new PackageBuilder(workingDir, env);
+  public static PackageBuilder of(File workingDir, Environment environment) {
+    Environment e = environment.clone();
+    Constants.updateEnvironment(e);
+    return new PackageBuilder(workingDir, e);
   }
 }

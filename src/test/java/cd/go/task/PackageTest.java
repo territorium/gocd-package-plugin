@@ -2,34 +2,21 @@
 package cd.go.task;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 
-import cd.go.task.installer.Packages;
+import cd.go.common.util.Environment;
 import cd.go.task.installer.builder.PackageBuilder;
 
 public class PackageTest {
 
-  private static final String PATH_PGK = String.join(File.separator, Packages.BUILD, Packages.BUILD_PKG);
-
-
-  private static final String MODULE  = "2004dev";
-  private static final String PATTERN = "0.0-0";
-  private static final String RELEASE = "20.04";
-  private static final String PACKAGE = "20.04-dev";
-
   public static void main(String[] args) throws Exception {
     File workingDir = new File("/data/smartIO/test/installer");
-    Map<String, String> environment = new HashMap<String, String>();
-    environment.put("MODULE", MODULE);
-    environment.put("PATTERN", PATTERN);
-    environment.put("RELEASE", RELEASE);
-    environment.put("PACKAGE", PACKAGE);
+    Environment environment = new Environment();
+    environment.set("RELEASE", "20.04");
 
     PackageTest.buildPackages(workingDir, environment);
   }
 
-  protected static void buildPackages(File workingDir, Map<String, String> environment) throws Exception {
+  protected static void buildPackages(File workingDir, Environment environment) throws Exception {
     PackageBuilder builder = PackageBuilder.of(workingDir, environment);
     builder.setPackagePath("packages2");
 

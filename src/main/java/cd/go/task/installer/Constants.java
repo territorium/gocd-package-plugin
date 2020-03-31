@@ -15,21 +15,31 @@
 
 package cd.go.task.installer;
 
+import java.io.File;
+
+import cd.go.common.util.Environment;
+import cd.go.task.installer.builder.Version;
 
 /**
- * The {@link Packages} class.
+ * The {@link Constants} class.
  */
-public interface Packages {
+public interface Constants {
 
-  String PATTERN      = "PATTERN";
-  String VERSION      = "VERSION";
-  String RELEASE      = "RELEASE";
-  String RELEASE_DATE = "RELEASE_DATE";
+  String ENV_PATTERN      = "PATTERN";
+  String ENV_VERSION      = "VERSION";
+  String ENV_RELEASE      = "RELEASE";
+  String ENV_RELEASE_DATE = "RELEASE_DATE";
 
-  String META         = "meta";
-  String DATA         = "data";
 
-  String BUILD        = "build";
-  String BUILD_PKG    = "packages";
-  String BUILD_REPO   = "repository";
+  String PATH_PACKAGE    = String.join(File.separator, "build", "packages");
+  String PATH_REPOSITORY = String.join(File.separator, "build", "repository");
+
+
+  public static void updateEnvironment(Environment environment) {
+    Version version = Version.parse(environment.get(ENV_RELEASE));
+    environment.set("RELEASE", version.toString("00.00"));
+    environment.set("PACKAGE", version.toString("00.00-0"));
+    environment.set("MODULE", version.toString("00.00-0").replaceAll("[.-]", ""));
+    environment.set("PATTERN", version.getBuild() == null ? "00.00.0" : "00.00-0");
+  }
 }

@@ -52,7 +52,7 @@ public class ConfigHandler implements RequestHandler {
     ConfigResponse config = new ConfigResponse();
     config.setValue("mode", "INIT", "Mode", "1", true, false);
     config.setValue("path", null, "Package Path", "2", false, false);
-    config.setValue("module", null, "Module Name", "3", true, false);
+    config.setValue("module", null, "Module Name/Config", "3", true, false);
     config.setValue("source", null, "Data Source Pattern", "4", true, false);
     config.setValue("target", null, "Data Target Pattern", "5", true, false);
     return config.build();

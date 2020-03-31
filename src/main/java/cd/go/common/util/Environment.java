@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,11 +28,18 @@ import java.util.regex.Pattern;
  */
 public class Environment {
 
-  private static final Pattern NAMES  = Pattern.compile("\\(\\?<([a-z][a-z_0-9]*)>", Pattern.CASE_INSENSITIVE);
-  private static final Pattern PARAMS = Pattern.compile("\\$([0-9]+|[a-z][a-z_0-9]*)", Pattern.CASE_INSENSITIVE);
+  public static final Pattern NAMES  = Pattern.compile("\\(\\?<([a-z][a-z_0-9]*)>", Pattern.CASE_INSENSITIVE);
+  public static final Pattern PARAMS = Pattern.compile("\\$([0-9]+|[a-z][a-z_0-9]*)", Pattern.CASE_INSENSITIVE);
 
 
   private final Map<String, String> environment;
+
+  /**
+   * Constructs an instance of {@link Environment}.
+   */
+  public Environment() {
+    this(new HashMap<>());
+  }
 
   /**
    * Constructs an instance of {@link Environment}.
@@ -47,7 +53,7 @@ public class Environment {
   /**
    * Set a new parameter to the {@link Environment}.
    */
-  public final Map<String, String> get() {
+  public final Map<String, String> toMap() {
     return this.environment;
   }
 
@@ -84,24 +90,13 @@ public class Environment {
    * Replace all parameters that have values in the environment.
    *
    * @param input
-   * @param normalize
    */
-  public final String replace(String input) {
-    return replace(input, (k, v) -> v);
-  }
-
-  /**
-   * Replace all parameters that have values in the environment.
-   *
-   * @param input
-   * @param normalize
-   */
-  public final String replace(String input, BiFunction<String, String, String> function) {
+  public final String replaceModuleName(String input) {
     String text = input;
     Matcher matcher = Environment.PARAMS.matcher(input);
     while (matcher.find() && environment.containsKey(matcher.group(1))) {
       String key = matcher.group(1);
-      String value = function.apply(key, environment.get(key));
+      String value = environment.get(key);
       text = text.replace("$" + key, value);
     }
     return text;

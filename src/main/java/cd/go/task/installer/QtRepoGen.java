@@ -4,7 +4,8 @@ package cd.go.task.installer;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import cd.go.common.util.Environment;
 
 public class QtRepoGen extends Qt {
 
@@ -17,7 +18,7 @@ public class QtRepoGen extends Qt {
    * @param workingDir
    * @param environment
    */
-  public QtRepoGen(File workingDir, Map<String, String> environment) {
+  public QtRepoGen(File workingDir, Environment environment) {
     super(workingDir, environment);
     this.update = false;
   }
@@ -54,7 +55,7 @@ public class QtRepoGen extends Qt {
    * @param workingDir
    * @param environment
    */
-  public static QtRepoGen of(File workingDir, Map<String, String> environment) {
+  public static QtRepoGen of(File workingDir, Environment environment) {
     return new QtRepoGen(workingDir, environment);
   }
 }

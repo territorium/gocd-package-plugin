@@ -19,21 +19,17 @@ import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-
-import cd.go.common.util.Environment;
 
 /**
  * The {@link FileTreeCopying} copies a directory structure from source to the target path.
  */
 final class FileTreeCopying extends SimpleFileVisitor<Path> {
 
-  private final Path        source;
-  private final Path        target;
-  private final Environment environment;
+  private final Path source;
+  private final Path target;
 
   /**
    *
@@ -41,13 +37,10 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
    *
    * @param source
    * @param target
-   * @param environment
-   * @param cleanPath
    */
-  private FileTreeCopying(Path source, Path target, Environment environment) {
+  private FileTreeCopying(Path source, Path target) {
     this.source = source;
     this.target = target;
-    this.environment = environment;
   }
 
   /**
@@ -56,9 +49,7 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
    * @param path
    */
   private final Path toPath(Path path) {
-    Path relativePath = source.relativize(path);
-    String pathName = environment.replace(relativePath.toString());
-    return target.resolve(Paths.get(pathName));
+    return target.resolve(source.relativize(path));
   }
 
   /**
@@ -96,17 +87,6 @@ final class FileTreeCopying extends SimpleFileVisitor<Path> {
    * @param environment
    */
   public static void copyFileTree(Path source, Path target) throws IOException {
-    copyFileTree(source, target, Environment.empty());
-  }
-
-  /**
-   * Copy the file tree using the environment variables.
-   *
-   * @param source
-   * @param target
-   * @param environment
-   */
-  public static void copyFileTree(Path source, Path target, Environment environment) throws IOException {
-    Files.walkFileTree(source, new FileTreeCopying(source, target, environment));
+    Files.walkFileTree(source, new FileTreeCopying(source, target));
   }
 }
