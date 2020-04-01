@@ -22,7 +22,7 @@ import java.io.OutputStream;
  * in the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
-class ArchiverTarGz extends ArchiverTar {
+class ArchiveTarGz extends ArchiveTar {
 
   /**
    * Creates a .tar.gz file
@@ -30,7 +30,7 @@ class ArchiverTarGz extends ArchiverTar {
    * @param file
    * @param name
    */
-  public ArchiverTarGz(File file, String name) {
+  public ArchiveTarGz(File file, String name) {
     super(file, name);
   }
 

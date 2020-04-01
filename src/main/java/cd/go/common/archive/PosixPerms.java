@@ -1,6 +1,12 @@
 
 package cd.go.common.archive;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Set;
 
@@ -64,5 +70,20 @@ class PosixPerms {
 
   public static boolean isExecuteable(int mode) {
     return (mode & OWNER_EXEC) > 0 || (mode & GROUP_EXEC) > 0 || (mode & OTHERS_EXEC) > 0;
+  }
+
+  /**
+   * Get the {@link PosixFileAttributes} from the {@link File}.
+   *
+   * @param file
+   */
+  public static PosixFileAttributes getAttributes(File file) {
+    PosixFileAttributeView view =
+        Files.getFileAttributeView(file.toPath(), PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+
+    try {
+      return (view == null) ? null : view.readAttributes();
+    } catch (IOException e) {}
+    return null;
   }
 }

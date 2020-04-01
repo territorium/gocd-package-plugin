@@ -17,11 +17,15 @@ The packaging plugin is used to create package structures for the Qt Installer. 
 - *Installer (Online/Offline)*: Creates the installer, optionally package-ing for an offline installer.
 
 
-The plugin uses different environment variables:
+The plugin uses different environment variables, but you need to define only 1:
+
+- *RELEASE*: Defines the release version, optionally with the version name (e.g. 20.04-dev).
+
+Internally they will be mapped to:
 
 - *RELEASE*: Defines the release version for the global installer (e.g. 20.04).
 - *MODULE*: Defines the package name for the namespace (e.g. 2004dev), this identifies the package globally. The name must be without spaces and special characters
-- *PATTERN*: Defines the version pattern, containing MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits.
+- *PATTERN*: Defines the version pattern MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits. The if a version name is defined the pattern is 0.00-0, otherwise the pattern 0.00.0 is used
 - *PACKAGE*: Defines package name for the title in the root package.
 
 
@@ -38,15 +42,15 @@ The package is the principal process to create the structure of a package. The p
 
 The repository process creates the structure for the remote repository. All files contained in the repository should be upload to a remote repository, from where an online installer can consume the information. The process doesn't use any option.
 
-- *Module Name*: Optionally defines a comma separated list of the modules to used for the repository. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packges are provided.
+- *Data Source Pattern Name*: Optionally defines a comma separated list of the modules to used for the repository. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packges are provided.
 
 
 ### Installer
 
 The installer process creates an online/offline installer (or both).
 
-- *Module Name*: Optionally defines a comma separated list of the modules to used for the installer. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packages are provided.
-- *Data Source Pattern*: Defines the configuration file for the installer, e.g. *config/config.xml*.
+- *Config Name*: Defines the configuration file for the installer, e.g. *config/config.xml*.
+- *Data Source Pattern*: Optionally defines a comma separated list of the modules to used for the installer. e.g. *tol.$MODULE.server_win64,tol.$MODULE.webapp,tol.$MODULE.app.web,tol.$MODULE.app.android,tol.$MODULE.app.ios*. If the option is omitted, all packages are provided. 
 - *Data Target Pattern*: Defines the name of the installer, e.g. *Installer*.
 
 
@@ -55,7 +59,7 @@ The installer process creates an online/offline installer (or both).
 
 The installer process creates an archive (.zip, .tar, .tar.gz) from a list of files. All files are flatten in the archive.
 
-- *Data Source Pattern*: A comma separated list of files, that should by archived.
+- *Data Source Pattern*: A comma separated list of files, that should by archived. The Pattern allows to define a file or a folder, that should be included into the assembly. Optionally following syntax is possible: path{[bin]/*.exe}. This will catch all EXE files from the *path* and include them into the archive into the folder *bin* 
 - *Data Target Pattern*: The archive name, the task will recognize the archive type from the file name.
 
 

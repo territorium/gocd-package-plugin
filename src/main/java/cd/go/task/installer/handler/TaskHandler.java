@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import cd.go.common.archive.Assembly;
 import cd.go.common.request.RequestHandler;
-import cd.go.common.util.Assemply;
 import cd.go.task.installer.Constants;
 import cd.go.task.installer.QtInstaller;
 import cd.go.task.installer.QtRepoGen;
@@ -90,7 +90,7 @@ public class TaskHandler implements RequestHandler {
     console.printLine("Launching command on: " + task.getWorkingDirectory());
     console.printEnvironment(task.getEnvironment().toMap());
 
-    File workingDir = new File(task.getWorkingDirectory());
+    File workingDir = new File(task.getWorkingDirectory()).getAbsoluteFile();
     try {
       switch (mode) {
         case "PACKAGE":
@@ -112,16 +112,12 @@ public class TaskHandler implements RequestHandler {
                   .toResponse();
 
         case "ASSEMBLY":
-          Assemply assemply = Assemply.of(new File(workingDir, target));
-          for (String entry : source.split("[,\\n]")) {
-            File file = new File(workingDir, entry);
-            if (file.exists()) {
-              assemply.addFile(file);
-            } else {
-              console.printLine("File '" + entry + "' doesn't exists");
-            }
+          Assembly assembly = Assembly.of(workingDir);
+          assembly.setArchive(new File(workingDir, target));
+          for (String pattern : source.split("[\\n]")) {
+            assembly.addPattern(pattern.trim());
           }
-          assemply.build();
+          assembly.build(m -> console.printLine(m));
           return TaskResponse.success("Assemply created").toResponse();
 
         case "ONLINE":
@@ -200,7 +196,9 @@ public class TaskHandler implements RequestHandler {
     List<String> modules = new ArrayList<>();
     if (text != null) {
       for (String name : Arrays.asList(text.split(",\\n"))) {
-        modules.add(task.getEnvironment().replaceModuleName(name));
+        if (!name.trim().isEmpty()) {
+          modules.add(task.getEnvironment().replaceModuleName(name));
+        }
       }
 
       for (File file : new File(task.getWorkingDirectory(), Constants.PATH_PACKAGE).listFiles()) {

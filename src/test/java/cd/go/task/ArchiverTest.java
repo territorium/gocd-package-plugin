@@ -3,21 +3,29 @@ package cd.go.task;
 
 import java.io.File;
 
-import cd.go.common.archive.Archiver;
+import cd.go.common.archive.Archive;
+import cd.go.common.archive.ArchiveBuilder;
 
 public class ArchiverTest {
 
+
   public static void main(String[] args) throws Exception {
-    File workingDir = new File("/home/brigl/TOL");
+    File workingDir = new File("/data/smartIO/test");
 
-    Archiver archiver = Archiver.of(new File(workingDir, "test.tar"));
-    archiver.archiveDirectory(new File(workingDir, "tools"));
+    try (ArchiveBuilder c = Archive.builder(new File(workingDir, "test.tar"))) {
+      c.addDirectory(new File(workingDir, "qt-5.12.7-gcc-tools"));
+    }
 
-    archiver = Archiver.of(new File(workingDir, "test.tar.gz"));
-    archiver.archiveDirectory(new File(workingDir, "tools"));
-    archiver.extract(new File(workingDir, "test"));
+    try (ArchiveBuilder c = Archive.builder(new File(workingDir, "test.tar.gz"))) {
+      c.addDirectory(new File(workingDir, "qt-5.12.7-gcc-tools"));
+      // c.addFile(workingDir, "Monitor");
+      // c.addFile(new File(workingDir, "qt-5.12.7-gcc-tools"), "");
+    }
 
-    archiver = Archiver.of(new File(workingDir, "test.zip"));
-    archiver.archiveDirectory(new File(workingDir, "tools"));
+    try (ArchiveBuilder c = Archive.builder(new File(workingDir, "test.zip"))) {
+      c.addDirectory(new File(workingDir, "qt-5.12.4-msvc-tools"));
+      c.addFile(workingDir, "[bin]Monitor.exe");
+      // c.addFile(new File(workingDir, "qt-5.12.4-msvc-tools"), "");
+    }
   }
 }
