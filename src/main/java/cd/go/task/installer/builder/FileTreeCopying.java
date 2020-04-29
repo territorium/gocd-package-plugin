@@ -18,75 +18,78 @@ package cd.go.task.installer.builder;
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 
 /**
- * The {@link FileTreeCopying} copies a directory structure from source to the target path.
+ * The {@link FileTreeCopying} copies a directory structure from source to the
+ * target path.
  */
 final class FileTreeCopying extends SimpleFileVisitor<Path> {
 
-  private final Path source;
-  private final Path target;
+	private final Path source;
+	private final Path target;
 
-  /**
-   *
-   * Constructs an instance of {@link FileTreeCopying}.
-   *
-   * @param source
-   * @param target
-   */
-  private FileTreeCopying(Path source, Path target) {
-    this.source = source;
-    this.target = target;
-  }
+	/**
+	 *
+	 * Constructs an instance of {@link FileTreeCopying}.
+	 *
+	 * @param source
+	 * @param target
+	 */
+	private FileTreeCopying(Path source, Path target) {
+		this.source = source;
+		this.target = target;
+	}
 
-  /**
-   * Resolves the path.
-   * 
-   * @param path
-   */
-  private final Path toPath(Path path) {
-    return target.resolve(source.relativize(path));
-  }
+	/**
+	 * Resolves the path.
+	 * 
+	 * @param path
+	 */
+	private final Path toPath(Path path) {
+		return target.resolve(source.relativize(path));
+	}
 
-  /**
-   * Visit a directory.
-   * 
-   * @param path
-   * @param attrs
-   */
-  @Override
-  public final FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
-    Path dir = toPath(path);
-    if (!Files.exists(dir)) {
-      Files.createDirectory(dir);
-    }
-    return FileVisitResult.CONTINUE;
-  }
+	/**
+	 * Visit a directory.
+	 * 
+	 * @param path
+	 * @param attrs
+	 */
+	@Override
+	public final FileVisitResult preVisitDirectory(Path path, BasicFileAttributes attrs) throws IOException {
+		Path dir = toPath(path);
+		if (!Files.exists(dir)) {
+			Files.createDirectory(dir);
+		}
+		return FileVisitResult.CONTINUE;
+	}
 
-  /**
-   * Visit a file.
-   * 
-   * @param path
-   * @param attrs
-   */
-  @Override
-  public final FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-    Files.copy(path, toPath(path), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-    return FileVisitResult.CONTINUE;
-  }
+	/**
+	 * Visit a file.
+	 * 
+	 * @param path
+	 * @param attrs
+	 */
+	@Override
+	public final FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+		Files.copy(path, toPath(path), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES,
+				LinkOption.NOFOLLOW_LINKS);
+		return FileVisitResult.CONTINUE;
+	}
 
-  /**
-   * Copy the file tree using the environment variables.
-   *
-   * @param source
-   * @param target
-   * @param environment
-   */
-  public static void copyFileTree(Path source, Path target) throws IOException {
-    Files.walkFileTree(source, new FileTreeCopying(source, target));
-  }
+	/**
+	 * Copy the file tree using the environment variables.
+	 *
+	 * @param source
+	 * @param target
+	 * @param environment
+	 */
+	public static void copyFileTree(Path source, Path target) throws IOException {
+		Files.walkFileTree(source, new FileTreeCopying(source, target));
+	}
 }
