@@ -33,11 +33,11 @@ import cd.go.task.installer.Constants;
  * The {@link PackageBuilder} is an utility class that creates the package structure for the
  * installer. The builder copies the meta data from a source directory and creates a build
  * directory.
- * 
+ *
  * <pre>
  * -packages - com.vendor.root - data - meta - com.vendor.root.component1 - data - meta -
  * com.vendor.root.component1.subcomponent1 - data - meta - com.vendor.root.component2 - data - meta
- * 
+ *
  * <pre>
  */
 public class PackageBuilder {
@@ -81,7 +81,7 @@ public class PackageBuilder {
    * @param target
    */
   public void addPackage(String name, File workingDir, String source, String target) {
-    String moduleName = environment.replaceModuleName(name);
+    String moduleName = this.environment.replaceModuleName(name);
     this.data.add(new PackageData(moduleName, workingDir, source, target));
   }
 
@@ -96,14 +96,14 @@ public class PackageBuilder {
    * Get the source path of the package definition.
    */
   protected final Path getSourcePath() {
-    return workingDir.toPath().resolve(packagePath == null ? "packages" : packagePath);
+    return this.workingDir.toPath().resolve(this.packagePath == null ? "packages" : this.packagePath);
   }
 
   /**
    * Get the target path for the build package structure.
    */
   protected final Path getTargetPath() {
-    return workingDir.toPath().resolve(Constants.PATH_PACKAGE);
+    return this.workingDir.toPath().resolve(Constants.PATH_PACKAGE);
   }
 
   /**
@@ -116,7 +116,7 @@ public class PackageBuilder {
 
     // Collect depending packages
     for (File file : getSourcePath().toFile().listFiles()) {
-      String moduleName = environment.replaceModuleName(file.getName());
+      String moduleName = this.environment.replaceModuleName(file.getName());
       File location = new File(getTargetPath().toFile(), moduleName);
       if (name.contains(moduleName) && !location.exists()) {
         modules.put(file.getName(), moduleName);
@@ -134,7 +134,7 @@ public class PackageBuilder {
       for (File file : meta.listFiles()) {
         String data = new String(Files.readAllBytes(file.toPath()));
         try (Writer writer = new FileWriter(file)) {
-          writer.write(environment.replaceModuleName(data));
+          writer.write(this.environment.replaceModuleName(data));
         }
       }
     }
@@ -156,7 +156,7 @@ public class PackageBuilder {
     }
 
     for (PackageData data : packageData()) {
-      data.build(getTargetPath().toFile(), environment);
+      data.build(getTargetPath().toFile(), this.environment);
     }
   }
 
@@ -168,8 +168,6 @@ public class PackageBuilder {
    * @param environment
    */
   public static PackageBuilder of(File workingDir, Environment environment) {
-    Environment e = environment.clone();
-    Constants.updateEnvironment(e);
-    return new PackageBuilder(workingDir, e);
+    return new PackageBuilder(workingDir, environment);
   }
 }

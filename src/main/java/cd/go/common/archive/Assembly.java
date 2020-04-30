@@ -33,12 +33,12 @@ public class Assembly {
   private final File           workingDir;
 
 
-  private File         archive;
-  private List<String> patterns = new ArrayList<>();
+  private File               archive;
+  private final List<String> patterns = new ArrayList<>();
 
   /**
    * Constructs an instance of {@link Assembly}.
-   * 
+   *
    * @param workingDir
    */
   private Assembly(File workingDir) {
@@ -47,7 +47,7 @@ public class Assembly {
 
   /**
    * Set the archive
-   * 
+   *
    * @param archive
    */
   public final Assembly setArchive(File archive) {
@@ -57,7 +57,7 @@ public class Assembly {
 
   /**
    * Set the archive
-   * 
+   *
    * @param archive
    */
   public final Assembly addPattern(String pattern) {
@@ -67,14 +67,14 @@ public class Assembly {
 
   /**
    * Build the archive
-   * 
+   *
    */
   public final void build(Consumer<String> consumer) throws IOException {
-    try (ArchiveBuilder builder = Archive.builder(archive)) {
-      for (String input : patterns) {
-        Matcher matcher = PATTERN.matcher(input);
+    try (ArchiveBuilder builder = Archive.builder(this.archive)) {
+      for (String input : this.patterns) {
+        Matcher matcher = Assembly.PATTERN.matcher(input);
         if (matcher.find()) {
-          File file = new File(workingDir, matcher.group(1));
+          File file = new File(this.workingDir, matcher.group(1));
           if (!file.exists()) {
             throw new IOException("File '" + matcher.group(1) + "' does not exist");
           }
@@ -95,7 +95,7 @@ public class Assembly {
 
   /**
    * Constructs an instance of {@link Assembly}.
-   * 
+   *
    * @param workingDir
    */
   public static Assembly of(File workingDir) {

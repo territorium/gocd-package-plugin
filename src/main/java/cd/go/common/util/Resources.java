@@ -33,7 +33,7 @@ public class Resources {
     InputStream stream = Resources.class.getResourceAsStream(resourceFile);
     try (InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
       try (StringWriter writer = new StringWriter()) {
-        copy(reader, writer);
+        Resources.copy(reader, writer);
         return writer.toString();
       }
     } catch (IOException e) {
@@ -84,7 +84,7 @@ public class Resources {
     char[] buffer = new char[1024 * 4];
     long count = 0;
     int n;
-    while (EOF != (n = input.read(buffer))) {
+    while (Resources.EOF != (n = input.read(buffer))) {
       output.write(buffer, 0, n);
       count += n;
     }

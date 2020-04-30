@@ -57,28 +57,28 @@ public class TaskConfig {
    * Get all names of the configuration
    */
   public final Set<String> getNames() {
-    return config.keySet();
+    return this.config.keySet();
   }
 
   /**
    * Gets the configuration value
    */
   public final String getValue(String name) {
-    return config.containsKey(name) ? config.get(name).value : null;
+    return this.config.containsKey(name) ? this.config.get(name).value : null;
   }
 
   /**
    * Return <code>true</code> if the property should be secured.
    */
   public final boolean isSecure(String name) {
-    return config.containsKey(name) ? config.get(name).secure : false;
+    return this.config.containsKey(name) ? this.config.get(name).secure : false;
   }
 
   /**
    * Return <code>true</code> if the property is required.
    */
   public final boolean isRequired(String name) {
-    return config.containsKey(name) ? config.get(name).required : false;
+    return this.config.containsKey(name) ? this.config.get(name).required : false;
   }
 
   /**

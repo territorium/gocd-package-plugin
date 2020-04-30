@@ -37,31 +37,31 @@ class PosixPerms {
     for (PosixFilePermission permissionBit : permissions) {
       switch (permissionBit) {
         case OWNER_READ:
-          result |= OWNER_READ;
+          result |= PosixPerms.OWNER_READ;
           break;
         case OWNER_WRITE:
-          result |= OWNER_WRITE;
+          result |= PosixPerms.OWNER_WRITE;
           break;
         case OWNER_EXECUTE:
-          result |= OWNER_EXEC;
+          result |= PosixPerms.OWNER_EXEC;
           break;
         case GROUP_READ:
-          result |= GROUP_READ;
+          result |= PosixPerms.GROUP_READ;
           break;
         case GROUP_WRITE:
-          result |= GROUP_WRITE;
+          result |= PosixPerms.GROUP_WRITE;
           break;
         case GROUP_EXECUTE:
-          result |= GROUP_EXEC;
+          result |= PosixPerms.GROUP_EXEC;
           break;
         case OTHERS_READ:
-          result |= OTHERS_READ;
+          result |= PosixPerms.OTHERS_READ;
           break;
         case OTHERS_WRITE:
-          result |= OTHERS_WRITE;
+          result |= PosixPerms.OTHERS_WRITE;
           break;
         case OTHERS_EXECUTE:
-          result |= OTHERS_EXEC;
+          result |= PosixPerms.OTHERS_EXEC;
           break;
       }
     }
@@ -69,7 +69,8 @@ class PosixPerms {
   }
 
   public static boolean isExecuteable(int mode) {
-    return (mode & OWNER_EXEC) > 0 || (mode & GROUP_EXEC) > 0 || (mode & OTHERS_EXEC) > 0;
+    return ((mode & PosixPerms.OWNER_EXEC) > 0) || ((mode & PosixPerms.GROUP_EXEC) > 0)
+        || ((mode & PosixPerms.OTHERS_EXEC) > 0);
   }
 
   /**

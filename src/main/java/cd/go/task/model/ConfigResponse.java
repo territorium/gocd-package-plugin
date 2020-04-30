@@ -64,7 +64,7 @@ public class ConfigResponse {
    * @param required
    */
   public final void setValue(String name, String value, boolean required) {
-    values.put(name, new Value(value, null, null, required, false));
+    this.values.put(name, new Value(value, null, null, required, false));
   }
 
   /**
@@ -76,7 +76,7 @@ public class ConfigResponse {
    */
   public final void setValue(String name, String value, String display, String order, boolean required,
       boolean secure) {
-    values.put(name, new Value(value, order, display, required, secure));
+    this.values.put(name, new Value(value, order, display, required, secure));
   }
 
   /**
@@ -84,8 +84,8 @@ public class ConfigResponse {
    */
   public final GoPluginApiResponse build() {
     JsonObjectBuilder object = Json.createObjectBuilder();
-    for (String name : values.keySet()) {
-      Value value = values.get(name);
+    for (String name : this.values.keySet()) {
+      Value value = this.values.get(name);
 
       JsonObjectBuilder config = Json.createObjectBuilder();
       if (value.value != null) {

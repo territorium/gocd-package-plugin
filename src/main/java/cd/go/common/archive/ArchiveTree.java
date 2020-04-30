@@ -53,7 +53,7 @@ class ArchiveTree extends SimpleFileVisitor<Path> {
 
   /**
    * Invoked for a directory before entries in the directory are visited.
-   * 
+   *
    * @param path
    * @param attrs
    */
@@ -65,7 +65,7 @@ class ArchiveTree extends SimpleFileVisitor<Path> {
 
   /**
    * Invoked for a file in a directory.
-   * 
+   *
    * @param path
    * @param attrs
    */
@@ -82,17 +82,17 @@ class ArchiveTree extends SimpleFileVisitor<Path> {
    * @param path
    */
   private final void checkPathPattern(Path path) throws IOException {
-    String input = root.relativize(path).toString();
+    String input = this.root.relativize(path).toString();
     // Avoid problems on Windows
-    Matcher matcher = pattern.matcher(input.replace('\\', '/'));
+    Matcher matcher = this.pattern.matcher(input.replace('\\', '/'));
     if (matcher.find()) {
-      files.add(new File(root.toFile(), input));
+      this.files.add(new File(this.root.toFile(), input));
     }
   }
 
   /**
    * The {@link FileComparator} checks that the files are ordered in following order:
-   * 
+   *
    * <pre>
    * - directory
    * - regular file

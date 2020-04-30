@@ -64,28 +64,28 @@ public final class Version implements Comparable<Version> {
    * Gets the major number.
    */
   public final int getMajor() {
-    return major;
+    return this.major;
   }
 
   /**
    * Gets the minor number.
    */
   public final int getMinor() {
-    return minor;
+    return this.minor;
   }
 
   /**
    * Gets the patch number.
    */
   public final int getPatch() {
-    return patch;
+    return this.patch;
   }
 
   /**
    * Gets the build text.
    */
   public final String getBuild() {
-    return build;
+    return this.build;
   }
 
   /**
@@ -137,9 +137,9 @@ public final class Version implements Comparable<Version> {
     StringBuffer buffer = new StringBuffer();
     String text = "%0" + matcher.group(1).length() + "d.%0" + matcher.group(2).length() + "d";
     buffer.append(String.format(text, getMajor(), getMinor()));
-    if (matcher.group(3) != null) {
+    if ((matcher.group(3) != null) && (getPatch() >= 0)) {
       text = ".%0" + matcher.group(3).length() + "d";
-      buffer.append(String.format(text, getPatch() < 0 ? 0 : getPatch()));
+      buffer.append(String.format(text, getPatch()));
     }
     if ((matcher.group(4) != null) && (getBuild() != null)) {
       buffer.append("-");

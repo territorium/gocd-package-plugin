@@ -26,6 +26,7 @@ import java.util.List;
 
 import cd.go.common.archive.Assembly;
 import cd.go.common.request.RequestHandler;
+import cd.go.common.util.Environment;
 import cd.go.task.installer.Constants;
 import cd.go.task.installer.QtInstaller;
 import cd.go.task.installer.QtRepoGen;
@@ -87,23 +88,24 @@ public class TaskHandler implements RequestHandler {
     String target = task.getConfig().getValue("target");
     String packagePath = task.getConfig().getValue("path");
 
-    console.printLine("Launching command on: " + task.getWorkingDirectory());
-    console.printEnvironment(task.getEnvironment().toMap());
+    this.console.printLine("Launching command on: " + task.getWorkingDirectory());
+    this.console.printEnvironment(task.getEnvironment().toMap());
 
     File workingDir = new File(task.getWorkingDirectory()).getAbsoluteFile();
     try {
       switch (mode) {
         case "PACKAGE":
-          PackageBuilder builder = PackageBuilder.of(workingDir, task.getEnvironment());
+          Environment e = Constants.updateEnvironment(task.getEnvironment());
+          PackageBuilder builder = PackageBuilder.of(workingDir, e);
           builder.setPackagePath(packagePath);
           builder.addPackage(config, workingDir, source, target);
           builder.build();
           break;
 
         case "REPOSITORY":
-          Process process = createRepogen(task, mode, target, toModules(task, source));
-          console.readErrorOf(process.getErrorStream());
-          console.readOutputOf(process.getInputStream());
+          Process process = createRepogen(task, mode, target, source);
+          this.console.readErrorOf(process.getErrorStream());
+          this.console.readOutputOf(process.getInputStream());
 
           int exitCode = process.waitFor();
           process.destroy();
@@ -117,15 +119,15 @@ public class TaskHandler implements RequestHandler {
           for (String pattern : source.split("[\\n]")) {
             assembly.addPattern(pattern.trim());
           }
-          assembly.build(m -> console.printLine(m));
+          assembly.build(m -> this.console.printLine(m));
           return TaskResponse.success("Assemply created").toResponse();
 
         case "ONLINE":
         case "OFFLINE":
         case "INSTALLER":
-          process = createInstaller(task, target, mode, config, toModules(task, source));
-          console.readErrorOf(process.getErrorStream());
-          console.readOutputOf(process.getInputStream());
+          process = createInstaller(task, target, mode, config, source);
+          this.console.readErrorOf(process.getErrorStream());
+          this.console.readOutputOf(process.getInputStream());
 
           exitCode = process.waitFor();
           process.destroy();
@@ -137,7 +139,7 @@ public class TaskHandler implements RequestHandler {
           return TaskResponse.success("Nothing to do").toResponse();
       }
     } catch (Throwable e) {
-      console.printLine("" + e);
+      this.console.printLine("" + e);
       return TaskResponse.failure(e.getMessage()).toResponse();
     }
     return TaskResponse.success("Executed the build").toResponse();
@@ -150,16 +152,14 @@ public class TaskHandler implements RequestHandler {
    * @param mode
    * @param source
    * @param target
-   * @param modules
+   * @param source
    */
-  protected Process createRepogen(TaskRequest task, String mode, String target, List<String> modules)
-      throws IOException {
+  protected Process createRepogen(TaskRequest task, String mode, String target, String source) throws IOException {
     File workingDir = new File(task.getWorkingDirectory());
-
 
     QtRepoGen builder = QtRepoGen.of(workingDir, task.getEnvironment());
     builder.setUpdate();
-    builder.addModules(modules);
+    builder.addModules(TaskHandler.toModules(source, task.getWorkingDirectory(), task.getEnvironment()));
     builder.setPackagePath(Constants.PATH_PACKAGE);
     builder.setRepositoryPath(Constants.PATH_REPOSITORY);
     return builder.build();
@@ -172,17 +172,20 @@ public class TaskHandler implements RequestHandler {
    * @param name
    * @param mode
    * @param config
-   * @param modules
+   * @param source
    */
-  protected Process createInstaller(TaskRequest task, String name, String mode, String config, List<String> modules)
+  protected Process createInstaller(TaskRequest task, String name, String mode, String config, String source)
       throws IOException {
     File workingDir = new File(task.getWorkingDirectory());
 
     QtInstaller builder = QtInstaller.of(workingDir, task.getEnvironment());
     builder.setName(name).setMode(mode);
     builder.setConfig(config);
-    builder.addModules(modules);
+    builder.addModules(TaskHandler.toModules(source, task.getWorkingDirectory(), task.getEnvironment()));
     builder.setPackagePath(Constants.PATH_PACKAGE);
+
+    builder.log(this.console);
+
     return builder.build();
   }
 
@@ -190,21 +193,24 @@ public class TaskHandler implements RequestHandler {
    * Converts the modules with it's dependencies
    *
    * @param task
-   * @param text
+   * @param workingDir
+   * @param environment
    */
-  protected List<String> toModules(TaskRequest task, String text) {
+  protected static List<String> toModules(String text, String workingDir, Environment environment) {
+    Environment e = Constants.updateEnvironment(environment);
     List<String> modules = new ArrayList<>();
     if (text != null) {
-      for (String name : Arrays.asList(text.split(",\\n"))) {
+      for (String name : Arrays.asList(text.split("(,|\\s|\\n|\\r\\n)"))) {
         if (!name.trim().isEmpty()) {
-          modules.add(task.getEnvironment().replaceModuleName(name));
+          modules.add(e.replaceModuleName(name));
         }
       }
 
-      for (File file : new File(task.getWorkingDirectory(), Constants.PATH_PACKAGE).listFiles()) {
+      for (File file : new File(workingDir, Constants.PATH_PACKAGE).listFiles()) {
         for (String module : new ArrayList<>(modules)) {
-          if (!modules.contains(file.getName()) && module.startsWith(file.getName()))
+          if (!modules.contains(file.getName()) && module.startsWith(file.getName())) {
             modules.add(file.getName());
+          }
         }
       }
     }

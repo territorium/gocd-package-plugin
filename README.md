@@ -25,7 +25,6 @@ Internally they will be mapped to:
 
 - *RELEASE*: Defines the release version for the global installer (e.g. 20.04).
 - *MODULE*: Defines the package name for the namespace (e.g. 2004dev), this identifies the package globally. The name must be without spaces and special characters
-- *PATTERN*: Defines the version pattern MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits. The if a version name is defined the pattern is 0.00-0, otherwise the pattern 0.00.0 is used
 - *PACKAGE*: Defines package name for the title in the root package.
 
 
@@ -37,6 +36,8 @@ The package is the principal process to create the structure of a package. The p
 - *Module Name*: Defines the module name to prepare for packaging. The module name can hold contain parameters, that are replaced by environment variables, e.g. tol.$MODULE.app.web
 - *Data Source Pattern*: Defines the directory or file used to copy in the data folder of the package. If the pattern declares an archive (.zip, .tar, .war, .tar.gz), the archive will be un-packed. Optionally it is possible to define a path inside the archive, if only a subset should be packaged, e.g. *download/smartIO-Web.zip!smartio*. The pattern can define named regular expression, which are provided to the environment, e.g. *smartIO-Web-(?<VERSION>[0-9.\-]+).zip* will provide the version number as *VERSION* in the environment.
 - *Data Target Pattern*: Defines the relative target directory in the data folder. You can use environment variables to create the directory or file, e.g. *webapps/client/smartio-$VERSION*.
+
+The package parses the meta data of the package and uses the version defined inside as pattern to format the version number. Defines the version pattern MAJOR.MINOR.PACTH-BUILDNUMBER, e.g. 00.00.0, defines the major & minor with 2 digits and a patch number or 0.00.0-0 defines a major, minor and build number, where the minor has always 2 digits. The if a version name is defined the pattern is 0.00-0, otherwise the pattern 0.00.0 is used
 
 ### Repository
 

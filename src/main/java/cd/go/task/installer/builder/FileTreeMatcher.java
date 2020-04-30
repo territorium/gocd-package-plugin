@@ -59,7 +59,7 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
    * Gets the list of {@link PathMatcher}.
    */
   public final List<PathMatcher> getMappers() {
-    return mappers;
+    return this.mappers;
   }
 
   @Override
@@ -73,11 +73,11 @@ class FileTreeMatcher extends SimpleFileVisitor<Path> {
   }
 
   private FileVisitResult visitPath(Path path, BasicFileAttributes attrs) {
-    String input = workingPath.relativize(path).toString();
-    Matcher matcher = pattern.matcher(input.replace('\\', '/')); // for windows matches
+    String input = this.workingPath.relativize(path).toString();
+    Matcher matcher = this.pattern.matcher(input.replace('\\', '/')); // for windows matches
     if (matcher.find()) {
-      Environment e = environment.clone(Environment.getParameters(matcher, names));
-      mappers.add(new PathMatcher(path.toFile(), e));
+      Environment e = this.environment.clone(Environment.getParameters(matcher, this.names));
+      this.mappers.add(new PathMatcher(path.toFile(), e));
       return FileVisitResult.SKIP_SUBTREE;
     }
     return FileVisitResult.CONTINUE;

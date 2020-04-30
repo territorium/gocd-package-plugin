@@ -4,23 +4,25 @@ package cd.go.task;
 import java.io.File;
 
 import cd.go.common.util.Environment;
+import cd.go.task.installer.Constants;
 import cd.go.task.installer.builder.PackageBuilder;
 
 public class PackageTest {
 
-  public static void main(String[] args) throws Exception {
-    File workingDir = new File("/data/smartIO/test/installer");
-    Environment environment = new Environment();
-    environment.set("RELEASE", "20.04");
+	public static void main(String[] args) throws Exception {
+		File workingDir = new File("/home/brigl/Downloads/smartIO-Installer-20.01");
+		Environment environment = new Environment();
+		environment.set("RELEASE", "20.04");
 
     PackageTest.buildPackages(workingDir, environment);
-  }
+	}
 
-  protected static void buildPackages(File workingDir, Environment environment) throws Exception {
-    PackageBuilder builder = PackageBuilder.of(workingDir, environment);
-    builder.setPackagePath("packages2");
+	protected static void buildPackages(File workingDir, Environment environment) throws Exception {
+		Environment e = Constants.updateEnvironment(environment);
+		PackageBuilder builder = PackageBuilder.of(workingDir, e);
+		builder.setPackagePath("packages2");
 
-    builder.addPackage("tol.$MODULE.server_linux", workingDir,
+		builder.addPackage("tol.$MODULE.server_linux", workingDir,
         "download/smartIO-Server-Linux-(?<VERSION>[0-9.\\-]+).tar.gz", "");
     builder.addPackage("tol.$MODULE.server_win64", workingDir,
         "download/smartIO-Server-Win64-(?<VERSION>[0-9.\\-]+).zip", "");

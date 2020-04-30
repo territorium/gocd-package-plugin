@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -8,6 +8,7 @@ package cd.go.common.archive;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.tar.TarConstants;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,10 +24,10 @@ import java.util.Map;
 
 /**
  * Gzipped Tar archiver which preserves
- * 
+ *
  * <ul> <li>POSIX file permissions</li> <li>Symbolic links (if the link target points inside the
  * archive)</li> <li>Last modification timestamp</li> </ul>
- * 
+ *
  * in the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
@@ -34,7 +35,7 @@ class ArchiveTar extends Archive {
 
   /**
    * Creates a .tar.gz file
-   * 
+   *
    * @param file
    * @param name
    */
@@ -51,8 +52,9 @@ class ArchiveTar extends Archive {
       while (entry != null) {
         LocalDateTime date =
             Instant.ofEpochMilli(entry.getLastModifiedDate().getTime()).atOffset(ZoneOffset.UTC).toLocalDateTime();
-        if (local == null || date.isAfter(local))
+        if ((local == null) || date.isAfter(local)) {
           local = date;
+        }
 
         File newFile = ArchiveUtil.newFile(target, entry.getName());
         if (entry.isDirectory()) {
@@ -78,9 +80,10 @@ class ArchiveTar extends Archive {
 
   /**
    * Archives the files.
-   * 
+   *
    * @param files
    */
+  @Override
   public final ArchiveBuilder builder() throws IOException {
     getFile().getAbsoluteFile().getParentFile().mkdirs();
 
@@ -96,7 +99,7 @@ class ArchiveTar extends Archive {
 
     /**
      * Constructs an instance of {@link TarBuilder}.
-     * 
+     *
      * @param stream
      */
     private TarBuilder(TarArchiveOutputStream stream) {
@@ -106,13 +109,14 @@ class ArchiveTar extends Archive {
     /**
      * Gets the {@link OutputStream}.
      */
+    @Override
     protected final TarArchiveOutputStream getOutputStream() {
       return (TarArchiveOutputStream) super.getOutputStream();
     }
 
     /**
      * Add a file to the {@link Archive} using the directory.
-     * 
+     *
      * @param directory
      * @param pattern
      * @param location
@@ -150,7 +154,7 @@ class ArchiveTar extends Archive {
 
     // only create symlink entry if link target is inside archive
     if (ArchiveUtil.isSymbolicLink(file) && ArchiveUtil.resolvesBelow(file, root)) {
-      TarArchiveEntry entry = new TarArchiveEntry(path, TarArchiveEntry.LF_SYMLINK);
+      TarArchiveEntry entry = new TarArchiveEntry(path, TarConstants.LF_SYMLINK);
       entry.setLinkName(ArchiveUtil.slashify(ArchiveUtil.getRelativeSymLinkTarget(file, file.getParentFile())));
       return entry;
     }

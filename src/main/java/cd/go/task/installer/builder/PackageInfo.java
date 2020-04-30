@@ -28,6 +28,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -36,7 +37,7 @@ import cd.go.task.installer.Constants;
 
 /**
  * The {@link PackageInfo} is a helper class to manage the meta/package.xml file.
- * 
+ *
  * <pre>
  * <?xml version="1.0"?>
  * <Package>
@@ -58,28 +59,26 @@ class PackageInfo {
   private static final Path   PACKAGE      = Paths.get("meta", "package.xml");
 
 
-  private final File        workingDir;
-  private final Environment environment;
+  private final Environment env;
 
   /**
    * Constructs an instance of {@link PackageInfo}.
    *
-   * @param workingDir
-   * @param environment
+   * @param env
    */
-  PackageInfo(File workingDir, Environment environment) {
-    this.workingDir = workingDir;
-    this.environment = environment;
+  PackageInfo(Environment env) {
+    this.env = env;
   }
 
   /**
    * Update the package info.
    *
    * @param name
+   * @param workingDir
    */
-  void updatePackageInfo(String name) throws IOException {
+  void updatePackageInfo(String name, LocalDate releaseDate, File workingDir) throws IOException {
     File file = new File(workingDir, name).toPath().resolve(PackageInfo.PACKAGE).toFile();
-    String text = readPackageInfo(file);
+    String text = readPackageInfo(file, releaseDate);
     try (FileWriter writer = new FileWriter(file)) {
       writer.write(text);
       writer.flush();
@@ -93,22 +92,11 @@ class PackageInfo {
    * @param version
    * @param localDate
    */
-  protected final String readPackageInfo(File file) throws IOException {
-    boolean ignore = false;
-    String version = null;
-    String pattern = "0.0.0-0";
-    String relaseDate = LocalDate.now().toString();
+  protected final String readPackageInfo(File file, LocalDate releaseDate) throws IOException {
+    Version version = this.env.isSet(Constants.ENV_VERSION) ? Version.parse(this.env.get(Constants.ENV_VERSION)) : null;
+    String relaseDate = releaseDate.toString();
 
-    if (environment.isSet(Constants.ENV_PATTERN)) {
-      pattern = environment.get(Constants.ENV_PATTERN);
-    }
-    if (environment.isSet(Constants.ENV_VERSION)) {
-      version = Version.parse(environment.get(Constants.ENV_VERSION)).toString(pattern);
-    }
-    if (environment.isSet(Constants.ENV_RELEASE_DATE)) {
-      relaseDate = environment.get(Constants.ENV_RELEASE_DATE);
-    }
-
+    StringBuffer pattern = null;
     StringBuffer buffer = new StringBuffer();
     buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 
@@ -121,12 +109,10 @@ class PackageInfo {
           StartElement startElement = nextEvent.asStartElement();
           String name = startElement.getName().getLocalPart();
 
-          if (name.equalsIgnoreCase(PackageInfo.VERSION) && version != null) {
-            ignore = true;
-            buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.VERSION, version));
-          } else if (name.equalsIgnoreCase(PackageInfo.RELEASE_DATE) && relaseDate != null) {
-            ignore = true;
-            buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.RELEASE_DATE, relaseDate));
+          if (name.equalsIgnoreCase(PackageInfo.VERSION) && (version != null)) {
+            pattern = new StringBuffer();
+          } else if (name.equalsIgnoreCase(PackageInfo.RELEASE_DATE) && (relaseDate != null)) {
+            pattern = new StringBuffer();
           } else {
             buffer.append("<");
             buffer.append(name);
@@ -139,18 +125,30 @@ class PackageInfo {
           }
         }
 
-        if (nextEvent.isCharacters() && !ignore) {
-          buffer.append(nextEvent.asCharacters());
+        if (nextEvent.isCharacters()) {
+          if (pattern == null) {
+            buffer.append(nextEvent.asCharacters());
+          } else {
+            pattern.append(nextEvent.asCharacters());
+          }
         }
 
         if (nextEvent.isEndElement()) {
-          if (!ignore) {
-            String name = nextEvent.asEndElement().getName().getLocalPart();
+          EndElement endElement = nextEvent.asEndElement();
+          String name = endElement.getName().getLocalPart();
+
+          if (name.equalsIgnoreCase(PackageInfo.VERSION) && (version != null)) {
+            String text = version.toString(pattern.toString());
+            buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.VERSION, text));
+          } else if (name.equalsIgnoreCase(PackageInfo.RELEASE_DATE) && (relaseDate != null)) {
+            buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.RELEASE_DATE, relaseDate));
+          }
+          if (pattern == null) {
             buffer.append("</");
             buffer.append(name);
             buffer.append(">");
           }
-          ignore = false;
+          pattern = null;
         }
       }
     } catch (XMLStreamException e) {

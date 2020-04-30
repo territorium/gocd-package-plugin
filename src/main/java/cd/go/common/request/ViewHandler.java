@@ -65,8 +65,8 @@ public class ViewHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     JsonObjectBuilder object = Json.createObjectBuilder();
-    object.add(ViewHandler.DISPLAY, display);
-    object.add(ViewHandler.TEMPLATE, Resources.readString(template));
+    object.add(ViewHandler.DISPLAY, this.display);
+    object.add(ViewHandler.TEMPLATE, Resources.readString(this.template));
     return DefaultGoPluginApiResponse.success(object.build().toString());
   }
 }

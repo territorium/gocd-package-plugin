@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 
 /**
  * Gzipped Tar archiver which preserves
- * 
+ *
  * <pre>
  * <ul>
  *   <li>POSIX file permissions</li>
@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
  *   <li>Last modification timestamp</li>
   </ul>
  * </pre>
- * 
+ *
  * In the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
@@ -35,7 +35,7 @@ public abstract class Archive {
 
   /**
    * Creates a .tar.gz file
-   * 
+   *
    * @param file
    * @param name
    */
@@ -48,7 +48,7 @@ public abstract class Archive {
    * Get the archive {@link File}.
    */
   protected final File getFile() {
-    return file;
+    return this.file;
   }
 
   /**
@@ -67,7 +67,7 @@ public abstract class Archive {
 
   /**
    * Extract to the target directory and return the last modification time.
-   * 
+   *
    * @param target
    */
   public abstract LocalDateTime extract(File target) throws IOException;
@@ -76,7 +76,7 @@ public abstract class Archive {
    * Extract the files in a directory with the name of the file
    */
   public final void extract() throws IOException {
-    extract(new File(getFile().getParentFile(), name));
+    extract(new File(getFile().getParentFile(), this.name));
   }
 
   /**
@@ -86,7 +86,7 @@ public abstract class Archive {
 
   /**
    * Archive the files.
-   * 
+   *
    * @param file
    */
   public static Archive of(File file) throws IOException {
@@ -104,7 +104,7 @@ public abstract class Archive {
 
   /**
    * Creates an {@link Archive} {@link ArchiveBuilder} for the file.
-   * 
+   *
    * @param file
    */
   public static ArchiveBuilder builder(File file) throws IOException {

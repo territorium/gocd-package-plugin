@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -18,10 +18,10 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Gzipped Tar archiver which preserves
- * 
+ *
  * <ul> <li>POSIX file permissions</li> <li>Symbolic links (if the link target points inside the
  * archive)</li> <li>Last modification timestamp</li> </ul>
- * 
+ *
  * in the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
@@ -29,7 +29,7 @@ class ArchiveZip extends Archive {
 
   /**
    * Creates a .tar.gz file
-   * 
+   *
    * @param file
    * @param name
    */
@@ -39,7 +39,7 @@ class ArchiveZip extends Archive {
 
   /**
    * Uncompress the provided ZIP-file to the target location
-   * 
+   *
    * @param target
    */
   @Override
@@ -49,8 +49,9 @@ class ArchiveZip extends Archive {
       ZipEntry entry = stream.getNextEntry();
       while (entry != null) {
         LocalDateTime date = Instant.ofEpochMilli(entry.getTime()).atOffset(ZoneOffset.UTC).toLocalDateTime();
-        if (local == null || date.isAfter(local))
+        if ((local == null) || date.isAfter(local)) {
           local = date;
+        }
 
         File newFile = ArchiveUtil.newFile(target, entry.getName());
         if (entry.isDirectory()) {
@@ -69,9 +70,10 @@ class ArchiveZip extends Archive {
 
   /**
    * Archives the files.
-   * 
+   *
    * @param files
    */
+  @Override
   public final ArchiveBuilder builder() throws IOException {
     getFile().getAbsoluteFile().getParentFile().mkdirs();
     return new ZipBuilder(new ZipOutputStream(getOutputStream(), Charset.defaultCharset()));
@@ -92,13 +94,14 @@ class ArchiveZip extends Archive {
     /**
      * Gets the {@link OutputStream}.
      */
+    @Override
     protected final ZipOutputStream getOutputStream() {
       return (ZipOutputStream) super.getOutputStream();
     }
 
     /**
      * Add the files matching the pattern to the {@link Archive}. Optional adds the path as prefix.
-     * 
+     *
      * @param directory
      * @param pattern
      * @param path

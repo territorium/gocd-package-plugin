@@ -15,6 +15,8 @@
 
 package cd.go.task.installer;
 
+import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -30,15 +32,12 @@ public abstract class Qt {
 
   private static final String QT_HOME = "QT_HOME";
 
+  private final File          home;
+  private final File          workingDir;
+  private final Environment   environment;
 
-  private final File        home;
-  private final File        workingDir;
-  private final Environment environment;
-
-
-  private String             packages;
-  private final List<String> modules = new ArrayList<>();
-
+  private String              packages;
+  private final List<String>  modules = new ArrayList<>();
 
   /**
    * Constructs an instance of {@link Qt}.
@@ -56,7 +55,7 @@ public abstract class Qt {
    * Get the Qt HOME directory
    */
   protected final File getQtHome() {
-    return home;
+    return this.home;
   }
 
   /**
@@ -70,14 +69,14 @@ public abstract class Qt {
    * @return the workingDir
    */
   protected final File getWorkingDir() {
-    return workingDir;
+    return this.workingDir;
   }
 
   /**
    * @return the environment
    */
   protected final Environment getEnvironment() {
-    return environment;
+    return this.environment;
   }
 
   /**
@@ -109,7 +108,7 @@ public abstract class Qt {
 
   private static boolean isWindows() {
     String osName = System.getProperty("os.name");
-    return osName != null && osName.toLowerCase().contains("windows");
+    return (osName != null) && osName.toLowerCase().contains("windows");
   }
 
   /**
@@ -134,16 +133,21 @@ public abstract class Qt {
    * Create an abstract command for the Qt {@link Process}.
    */
   protected List<String> getCommand() {
-    List<String> command = new ArrayList<String>();
+    List<String> command = new ArrayList<>();
 
     // Define include modules
-    if (!modules.isEmpty()) {
+    if (!this.modules.isEmpty()) {
       command.add("-i");
-      command.add(String.join(",", modules));
+      command.add(String.join(",", this.modules));
     }
     command.add("-p");
-    command.add(packages);
+    command.add(this.packages);
     return command;
+  }
+
+  public final void log(JobConsoleLogger console) {
+    console.printLine("Working Dir: " + getWorkingDir().getAbsolutePath());
+    console.printLine("Command: " + String.join(" ", getCommand()));
   }
 
   /**

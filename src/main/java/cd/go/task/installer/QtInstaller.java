@@ -22,7 +22,7 @@ public class QtInstaller extends Qt {
 
   /**
    * Create an installer builder
-   * 
+   *
    * @param workingDir
    * @param environment
    */
@@ -63,12 +63,13 @@ public class QtInstaller extends Qt {
   /**
    * Create the command for the Qt installer {@link Process}.
    */
+  @Override
   protected final List<String> getCommand() {
-    List<String> command = new ArrayList<String>();
+    List<String> command = new ArrayList<>();
     command.add(getBinaryCreator().getAbsolutePath());
 
     // Set online/offline mode
-    switch (mode) {
+    switch (this.mode) {
       case ONLINE:
         command.add("-n");
         break;
@@ -79,9 +80,9 @@ public class QtInstaller extends Qt {
     }
 
     command.add("-c");
-    command.add(config);
+    command.add(this.config);
     command.addAll(super.getCommand());
-    command.add(name);
+    command.add(this.name);
     return command;
   }
 

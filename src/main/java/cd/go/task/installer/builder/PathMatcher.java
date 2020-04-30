@@ -47,7 +47,7 @@ class PathMatcher {
    * Gets the {@link File}.
    */
   public final File getFile() {
-    return file;
+    return this.file;
   }
 
   /**
@@ -56,7 +56,7 @@ class PathMatcher {
    * @param name
    */
   public final Environment getEnvironment() {
-    return environment;
+    return this.environment;
   }
 
   /**
@@ -65,7 +65,7 @@ class PathMatcher {
    * @param pattern
    */
   public final String map(String pattern) {
-    return environment.replaceByPattern(pattern);
+    return this.environment.replaceByPattern(pattern);
   }
 
   /**

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -19,14 +19,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * 
+ *
  * The {@link ArchiveUtil} class provides global helper functions.
  */
 abstract class ArchiveUtil {
 
   /**
    * Copy the file to the {@link OutputStream}.
-   * 
+   *
    * @param file
    * @param stream
    */
@@ -38,7 +38,7 @@ abstract class ArchiveUtil {
 
   /**
    * Copy the file to the {@link OutputStream}.
-   * 
+   *
    * @param file
    * @param stream
    */
@@ -50,7 +50,7 @@ abstract class ArchiveUtil {
 
   /**
    * Create the new file name.
-   * 
+   *
    * @param target
    * @param name
    */
@@ -67,7 +67,7 @@ abstract class ArchiveUtil {
 
   /**
    * <code>true</code> if the file is a symbolik link.
-   * 
+   *
    * @param file
    */
   public static boolean isSymbolicLink(File file) {

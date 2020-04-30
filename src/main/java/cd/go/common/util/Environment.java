@@ -43,7 +43,7 @@ public class Environment {
 
   /**
    * Constructs an instance of {@link Environment}.
-   * 
+   *
    * @param environment
    */
   private Environment(Map<String, String> environment) {
@@ -63,7 +63,7 @@ public class Environment {
    * @param name
    */
   public final boolean isSet(String name) {
-    return environment.containsKey(name);
+    return this.environment.containsKey(name);
   }
 
   /**
@@ -72,7 +72,7 @@ public class Environment {
    * @param name
    */
   public final String get(String name) {
-    return environment.get(name);
+    return this.environment.get(name);
   }
 
   /**
@@ -82,7 +82,7 @@ public class Environment {
    * @param value
    */
   public final Environment set(String name, String value) {
-    environment.put(name, value);
+    this.environment.put(name, value);
     return this;
   }
 
@@ -94,9 +94,9 @@ public class Environment {
   public final String replaceModuleName(String input) {
     String text = input;
     Matcher matcher = Environment.PARAMS.matcher(input);
-    while (matcher.find() && environment.containsKey(matcher.group(1))) {
+    while (matcher.find() && this.environment.containsKey(matcher.group(1))) {
       String key = matcher.group(1);
-      String value = environment.get(key);
+      String value = this.environment.get(key);
       text = text.replace("$" + key, value);
     }
     return text;
@@ -114,7 +114,7 @@ public class Environment {
     Matcher matcher = Environment.PARAMS.matcher(pattern);
     while (matcher.find()) {
       String name = matcher.group(1);
-      String value = environment.get(name);
+      String value = this.environment.get(name);
       buffer.append(pattern.substring(offset, matcher.start(1) - 1));
       if (value == null) {
         buffer.append("$" + name);
@@ -162,13 +162,14 @@ public class Environment {
   /**
    * Constructs an instance of {@link Environment}.
    */
+  @Override
   public final Environment clone() {
-    return Environment.of(environment);
+    return Environment.of(this.environment);
   }
 
   /**
    * Constructs an instance of {@link Environment}.
-   * 
+   *
    * @param params
    */
   public final Environment clone(Map<String, String> params) {
@@ -179,7 +180,7 @@ public class Environment {
 
   /**
    * Constructs an instance of {@link Environment}.
-   * 
+   *
    * @param environment
    */
   public static Environment of(Map<String, String> environment) {
@@ -188,7 +189,7 @@ public class Environment {
 
   /**
    * Constructs an empty instance of {@link Environment}.
-   * 
+   *
    */
   public static Environment empty() {
     return new Environment(new HashMap<>());

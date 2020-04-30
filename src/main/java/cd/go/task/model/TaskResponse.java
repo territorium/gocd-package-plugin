@@ -32,13 +32,13 @@ public class TaskResponse {
   }
 
   public int responseCode() {
-    return success ? DefaultGoApiResponse.SUCCESS_RESPONSE_CODE : DefaultGoApiResponse.INTERNAL_ERROR;
+    return this.success ? DefaultGoApiResponse.SUCCESS_RESPONSE_CODE : DefaultGoApiResponse.INTERNAL_ERROR;
   }
 
   public final GoPluginApiResponse toResponse() {
     JsonObjectBuilder builder = Json.createObjectBuilder();
-    builder.add("success", success);
-    builder.add("message", message);
+    builder.add("success", this.success);
+    builder.add("message", this.message);
     return new DefaultGoPluginApiResponse(responseCode(), builder.build().toString());
   }
 

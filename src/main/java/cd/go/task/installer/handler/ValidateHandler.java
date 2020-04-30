@@ -62,14 +62,14 @@ public class ValidateHandler implements RequestHandler {
 
   /**
    * Add an validation rule.
-   * 
+   *
    * @param target
    * @param predicate
    * @param message
    */
   public final ValidateHandler addRule(String target, Predicate<String> predicate, String message) {
-    rules.put(target, predicate);
-    messages.put(target, message);
+    this.rules.put(target, predicate);
+    this.messages.put(target, message);
     return this;
   }
 

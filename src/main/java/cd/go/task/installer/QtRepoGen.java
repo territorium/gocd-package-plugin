@@ -14,7 +14,7 @@ public class QtRepoGen extends Qt {
 
   /**
    * Create an installer builder
-   * 
+   *
    * @param workingDir
    * @param environment
    */
@@ -36,16 +36,17 @@ public class QtRepoGen extends Qt {
   /**
    * Create the command for the Qt repogen {@link Process}.
    */
+  @Override
   protected final List<String> getCommand() {
-    List<String> command = new ArrayList<String>();
+    List<String> command = new ArrayList<>();
     command.add(getRepositoryGenerator().getAbsolutePath());
 
-    if (update) {
+    if (this.update) {
       command.add("--update");
     }
 
     command.addAll(super.getCommand());
-    command.add(repository);
+    command.add(this.repository);
     return command;
   }
 

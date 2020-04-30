@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -15,10 +15,10 @@ import java.io.OutputStream;
 
 /**
  * Gzipped Tar archiver which preserves
- * 
+ *
  * <ul> <li>POSIX file permissions</li> <li>Symbolic links (if the link target points inside the
  * archive)</li> <li>Last modification timestamp</li> </ul>
- * 
+ *
  * in the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
@@ -26,7 +26,7 @@ class ArchiveTarGz extends ArchiveTar {
 
   /**
    * Creates a .tar.gz file
-   * 
+   *
    * @param file
    * @param name
    */

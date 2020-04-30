@@ -25,21 +25,28 @@ import cd.go.task.installer.builder.Version;
  */
 public interface Constants {
 
-  String ENV_PATTERN      = "PATTERN";
-  String ENV_VERSION      = "VERSION";
-  String ENV_RELEASE      = "RELEASE";
-  String ENV_RELEASE_DATE = "RELEASE_DATE";
+  String ENV_VERSION     = "VERSION";
 
+  String ENV_RELEASE     = "RELEASE";
+  String ENV_PACKAGE     = "PACKAGE";
+  String ENV_MODULE      = "MODULE";
 
   String PATH_PACKAGE    = String.join(File.separator, "build", "packages");
   String PATH_REPOSITORY = String.join(File.separator, "build", "repository");
 
 
-  public static void updateEnvironment(Environment environment) {
-    Version version = Version.parse(environment.get(ENV_RELEASE));
-    environment.set("RELEASE", version.toString("00.00"));
-    environment.set("PACKAGE", version.toString("00.00-0"));
-    environment.set("MODULE", version.toString("00.00-0").replaceAll("[.-]", ""));
-    environment.set("PATTERN", version.getBuild() == null ? "00.00.0" : "00.00-0");
+  /**
+   * This is a very dirty implementation to replace the module names of the module pathes and the
+   * release/package variables in package.xml
+   * 
+   * @param environment
+   */
+  public static Environment updateEnvironment(Environment environment) {
+    Environment e = environment.clone();
+    Version version = Version.parse(e.get(Constants.ENV_RELEASE));
+    e.set(Constants.ENV_RELEASE, version.toString("00.00"));
+    e.set(Constants.ENV_PACKAGE, version.toString("00.00-0"));
+    e.set(Constants.ENV_MODULE, version.toString("00.00-0").replaceAll("[.-]", ""));
+    return e;
   }
 }

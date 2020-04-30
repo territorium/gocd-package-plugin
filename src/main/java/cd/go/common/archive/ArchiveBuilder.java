@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 
 package cd.go.common.archive;
@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 /**
  * Gzipped Tar archiver which preserves
- * 
+ *
  * <pre>
  * <ul>
  *   <li>POSIX file permissions</li>
@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  *   <li>Last modification timestamp</li>
   </ul>
  * </pre>
- * 
+ *
  * In the archive as found in the filesystem for files to be archived. It uses GNU tar format
  * extensions for archive entries with path length > 100.
  */
@@ -41,7 +41,7 @@ public abstract class ArchiveBuilder implements Closeable {
 
   /**
    * Constructs an instance of {@link ArchiveBuilder}.
-   * 
+   *
    * @param stream
    */
   protected ArchiveBuilder(OutputStream stream) {
@@ -52,12 +52,12 @@ public abstract class ArchiveBuilder implements Closeable {
    * Gets the {@link OutputStream}.
    */
   protected OutputStream getOutputStream() {
-    return stream;
+    return this.stream;
   }
 
   /**
    * Add a file to the {@link Archive} using the directory.
-   * 
+   *
    * @param directory
    * @param pattern
    * @param location
@@ -66,12 +66,12 @@ public abstract class ArchiveBuilder implements Closeable {
 
   /**
    * Add a file to the {@link ArchiveBuilder} using the directory.
-   * 
+   *
    * @param directory
    * @param pattern
    */
   public void addFile(File directory, String pattern) throws IOException {
-    Matcher matcher = PATTERN.matcher(pattern);
+    Matcher matcher = ArchiveBuilder.PATTERN.matcher(pattern);
     while (matcher.find()) {
       addToArchive(directory, matcher.group(2), matcher.group(1));
     }
@@ -79,7 +79,7 @@ public abstract class ArchiveBuilder implements Closeable {
 
   /**
    * Add a file to the {@link ArchiveBuilder} using the directory.
-   * 
+   *
    * @param directory
    * @param file
    */
@@ -90,7 +90,7 @@ public abstract class ArchiveBuilder implements Closeable {
 
   /**
    * Archives the files.
-   * 
+   *
    * @param files
    */
   public final void addFiles(List<File> files) throws IOException {
@@ -101,7 +101,7 @@ public abstract class ArchiveBuilder implements Closeable {
 
   /**
    * Archives the files in the directory
-   * 
+   *
    * @param directory
    */
   public final void addDirectory(File directory) throws IOException {
@@ -115,6 +115,6 @@ public abstract class ArchiveBuilder implements Closeable {
    */
   @Override
   public final void close() throws IOException {
-    stream.close();
+    this.stream.close();
   }
 }

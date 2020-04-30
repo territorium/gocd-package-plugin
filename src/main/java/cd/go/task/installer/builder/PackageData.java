@@ -18,6 +18,7 @@ package cd.go.task.installer.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -91,14 +92,15 @@ final class PackageData {
     String source = getSource();
 
     // Check archives that can be uncompressed (.zip, .tar, .tar.gz, .war)
-    Matcher match = ARCHIVES.matcher(source);
+    Matcher match = PackageData.ARCHIVES.matcher(source);
     if (match.find()) {
       for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, match.group(1))) {
         Archive.of(matcher.getFile()).extract();
       }
       source = match.group(2);
-      if (match.group(3) != null)
+      if (match.group(3) != null) {
         source += "/" + match.group(3);
+      }
     }
 
     Path workingPath = workingDir.toPath().resolve(getName()).resolve(PackageBuilder.DATA);
@@ -106,11 +108,11 @@ final class PackageData {
       // Copy the data to the build
       Path path = workingPath.resolve(matcher.map(getTarget(environment)));
       path.toFile().getParentFile().mkdirs();
-      FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
+      LocalDate releaseDate = FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
 
       // Change the package info
-      PackageInfo info = new PackageInfo(workingDir, matcher.getEnvironment());
-      info.updatePackageInfo(getName());
+      PackageInfo info = new PackageInfo(matcher.getEnvironment());
+      info.updatePackageInfo(getName(), releaseDate, workingDir);
     }
   }
 }
