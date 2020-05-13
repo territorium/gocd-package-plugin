@@ -3,8 +3,8 @@ package cd.go.task;
 
 import java.io.File;
 
-import cd.go.common.archive.Archive;
-import cd.go.common.archive.ArchiveBuilder;
+import info.tol.gocd.util.archive.Archive;
+import info.tol.gocd.util.archive.ArchiveBuilder;
 
 public class ArchiverTest {
 

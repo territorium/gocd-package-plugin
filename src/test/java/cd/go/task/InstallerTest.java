@@ -3,11 +3,11 @@ package cd.go.task;
 
 import java.io.File;
 
-import cd.go.common.util.Environment;
-import cd.go.task.installer.Constants;
-import cd.go.task.installer.QtInstaller;
-import cd.go.task.installer.QtInstaller.Mode;
-import cd.go.task.installer.QtRepoGen;
+import info.tol.gocd.task.qt.Constants;
+import info.tol.gocd.task.qt.QtInstaller;
+import info.tol.gocd.task.qt.QtRepoGen;
+import info.tol.gocd.task.qt.QtInstaller.Mode;
+import info.tol.gocd.util.Environment;
 
 public class InstallerTest {
 

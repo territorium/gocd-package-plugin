@@ -55,15 +55,6 @@ The installer process creates an online/offline installer (or both).
 - *Data Target Pattern*: Defines the name of the installer, e.g. *Installer*.
 
 
-
-### Assembly
-
-The installer process creates an archive (.zip, .tar, .tar.gz) from a list of files. All files are flatten in the archive.
-
-- *Data Source Pattern*: A comma separated list of files, that should by archived. The Pattern allows to define a file or a folder, that should be included into the assembly. Optionally following syntax is possible: path{[bin]/*.exe}. This will catch all EXE files from the *path* and include them into the archive into the folder *bin* 
-- *Data Target Pattern*: The archive name, the task will recognize the archive type from the file name.
-
-
 ## Building the code base
 
 To build the jar, run `./gradlew clean test assemble`
