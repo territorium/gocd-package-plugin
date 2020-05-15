@@ -1,13 +1,6 @@
-<div class="form_item_block" tabindex="1">
-	<label>Mode:<span class="asterisk">*</span></label>
-	<select
-		ng-model="mode">
-		<option value="PACKAGE">Package</option>
-		<option value="REPOSITORY">Repository</option>
-		<option value="INSTALLER">Online/Offline Installer</option>
-		<option value="ONLINE">Online Installer</option>
-		<option value="OFFLINE">Offline Installer</option>
-	</select>
+<div class="form_item_block">
+	<label>Release Name:</label>
+	<input type="text" ng-model="name" tabindex="2"></input>
 </div>
 
 <div class="form_item_block">
@@ -16,16 +9,16 @@
 </div>
 
 <div class="form_item_block">
-	<label>Module Name / Config:</label>
+	<label>Module Name:</label>
 	<input type="text" ng-model="module" tabindex="3"></input>
 </div>
 
 <div class="form_item_block">
-	<label>Data Source Pattern:</label>
+	<label>Sources:</label>
     <textarea ng-model="source" ng-required="false" tabindex="4" rows="5"></textarea>
 </div>
 
 <div class="form_item_block">
-	<label>Data Target Pattern:</label>
+	<label>Target Path:</label>
 	<input type="text" ng-model="target" tabindex="5"></input>
 </div>

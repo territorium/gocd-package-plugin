@@ -92,22 +92,6 @@ public class Environment {
   }
 
   /**
-   * Replace all parameters that have values in the environment.
-   *
-   * @param input
-   */
-  public final String replaceModuleName(String input) {
-    String text = input;
-    Matcher matcher = Environment.PARAMS.matcher(input);
-    while (matcher.find() && this.environment.containsKey(matcher.group(1))) {
-      String key = matcher.group(1);
-      String value = this.environment.get(key);
-      text = text.replace("$" + key, value);
-    }
-    return text;
-  }
-
-  /**
    * Replaces the indexed or named placeholder's with the the parameter values.
    *
    * @param pattern

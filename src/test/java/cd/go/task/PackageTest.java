@@ -3,30 +3,25 @@ package cd.go.task;
 
 import java.io.File;
 
-import info.tol.gocd.task.qt.Constants;
 import info.tol.gocd.task.qt.builder.PackageBuilder;
 import info.tol.gocd.util.Environment;
-import info.tol.gocd.util.Version;
 
 public class PackageTest {
 
   public static void main(String[] args) throws Exception {
     File workingDir = new File("/home/brigl/Downloads/smartIO-Packaging-Master");
     Environment environment = new Environment();
-    environment.set("RELEASE", "20.04");
-
-    System.out.println("" + Version.parse("1.2.3+dev-23"));
+    environment.set("RELEASE", "20.04-dev");
 
     PackageTest.buildPackages(workingDir, environment);
   }
 
   protected static void buildPackages(File workingDir, Environment environment) throws Exception {
-    Environment e = Constants.updateEnvironment(environment);
-    PackageBuilder builder = PackageBuilder.of(workingDir, e);
-    builder.setPackagePath("installer/packages2");
+    PackageBuilder builder = PackageBuilder.of(workingDir, environment);
+    builder.setPackagePath("installer/packages1");
 
-    builder.addPackage("tol.$MODULE.server_linux", workingDir,
-        "download/smartIO-Server-Linux-(?<VERSION>[\\d.\\-]+).tar.gz", "");
+    builder.addPackage("tol./smartio/$RELEASE/.server_linux",
+        "download/smartIO-Server-Linux-(?<VERSION>[\\d.\\-+]+).tar.gz", "");
     // builder.addPackage("tol.$MODULE.server_win64", workingDir,
     // "download/smartIO-Server-Win64-(?<VERSION>[\\d.\\-]+).zip", "");
 

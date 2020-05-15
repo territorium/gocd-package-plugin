@@ -76,20 +76,23 @@ public class TaskHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
+    String release = task.getConfig().getValue("name");
     String config = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
     String packagePath = task.getConfig().getValue("path");
+
+    Environment env = task.getEnvironment();
+    env.set(Constants.ENV_RELEASE, release);
 
     this.console.printLine("Launching command on: " + task.getWorkingDirectory());
     this.console.printEnvironment(task.getEnvironment().toMap());
 
     File workingDir = new File(task.getWorkingDirectory()).getAbsoluteFile();
     try {
-      Environment e = Constants.updateEnvironment(task.getEnvironment());
-      PackageBuilder builder = PackageBuilder.of(workingDir, e);
+      PackageBuilder builder = PackageBuilder.of(workingDir, env);
       builder.setPackagePath(packagePath);
-      builder.addPackage(config, workingDir, source, target);
+      builder.addPackage(config, source, target);
       builder.build();
 
       return TaskResponse.success("Executed the build").toResponse();

@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import info.tol.gocd.util.Environment;
+import info.tol.gocd.util.Version;
 import info.tol.gocd.util.archive.Archive;
 
 /**
@@ -33,25 +34,84 @@ import info.tol.gocd.util.archive.Archive;
 final class PackageData {
 
   private static final Pattern ARCHIVES = Pattern.compile("(([^#]+)(?:\\.zip|\\.tar(?:\\.gz)?|\\.war))(?:[!#](.+))?");
+  private static final Pattern REPLACER = Pattern.compile("^([^/]*)/([^/]+)/([^/]+)/(.*)$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern VERSION  =
+      Pattern.compile("<Version>\\$\\{RELEASE;([0.-]+)\\}</Version>", Pattern.CASE_INSENSITIVE);
 
 
-  private final String name;
-  private final File   workingDir;
-  private final String source;
-  private final String target;
+  private final String      name;
+  private final String      source;
+  private final String      target;
+  private final String      pattern;
+
+  private final File        workingDir;
+  private final Environment environment;
 
   /**
    * Constructs an instance of {@link PackageData}.
    *
    * @param name
-   * @param data
+   * @param source
    * @param target
+   * @param builder
    */
-  public PackageData(String name, File workingDir, String source, String target) {
-    this.name = name;
-    this.workingDir = workingDir;
+  public PackageData(String name, String source, String target, PackageBuilder builder) {
+    this.name = toName(name, builder.getEnvironment());
     this.source = source;
     this.target = target;
+    this.pattern = name;
+    this.workingDir = builder.getWorkingDir();
+    this.environment = builder.getEnvironment();
+  }
+
+  /**
+   * Removes the pattern from the module name.
+   *
+   * @param name
+   */
+  private static String toName(String name, Environment environment) {
+    Matcher m = REPLACER.matcher(name);
+    if (!m.find()) {
+      return name;
+    }
+
+    String value = environment.replaceByPattern(m.group(3)).replaceAll("[.-]", "");
+    return String.format("%s%s%s", m.group(1), value, m.group(4));
+  }
+
+  /**
+   * Removes the pattern from the module name.
+   *
+   * @param data
+   */
+  public String remap(String data) {
+    Matcher matcher = REPLACER.matcher(pattern);
+    if (!matcher.find()) {
+      return data;
+    }
+
+    String pattern = String.format("%s(%s)", matcher.group(1).replace(".", "\\."), matcher.group(2));
+    String value = environment.replaceByPattern(matcher.group(3));
+    Version version = Version.parse(value);
+
+    data = environment.replaceByPattern(data);
+    matcher = VERSION.matcher(data);
+    if (matcher.find()) {
+      String text = version.toString(matcher.group(1));
+      data = matcher.replaceFirst(String.format("<Version>%s</Version>", text));
+    }
+    value = value.replaceAll("[.-]", "");
+
+    int offset = 0;
+    StringBuffer buffer = new StringBuffer();
+    matcher = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE).matcher(data);
+    while (matcher.find()) {
+      buffer.append(data.substring(offset, matcher.start(1)));
+      buffer.append(value);
+      offset = matcher.end(1);
+    }
+    buffer.append(data.substring(offset, data.length()));
+    return buffer.toString();
   }
 
   /**

@@ -37,6 +37,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import info.tol.gocd.task.qt.Constants;
 import info.tol.gocd.util.Environment;
+import info.tol.gocd.util.Version;
 
 /**
  * The {@link PackageInfo} is a helper class to manage the meta/package.xml file.
@@ -97,7 +98,16 @@ class PackageInfo {
    * @param localDate
    */
   protected final String readPackageInfo(File file, LocalDate releaseDate) throws IOException {
+    Version release = this.env.isSet(Constants.ENV_RELEASE) ? Version.parse(this.env.get(Constants.ENV_RELEASE)) : null;
     Version version = this.env.isSet(Constants.ENV_VERSION) ? Version.parse(this.env.get(Constants.ENV_VERSION)) : null;
+    if (version != null) {
+      if (release == null || release.getName() == null) {
+        version = Version.of(version.getMajor(), version.getMinor(), version.getPatch());
+      } else {
+        version = Version.of(version.getMajor(), version.getMinor(), -1, null, version.getBuild());
+      }
+    }
+
     String relaseDate = releaseDate.toString();
 
     StringBuffer pattern = null;
@@ -142,7 +152,8 @@ class PackageInfo {
           String name = endElement.getName().getLocalPart();
 
           if (name.equalsIgnoreCase(PackageInfo.VERSION) && (version != null)) {
-            String text = version.toString(pattern.toString());
+            // IMPORTANT: Replace + characters by - as it is not supported
+            String text = version.toString(pattern.toString().replace('-', '+')).replace('+', '-');
             buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.VERSION, text));
           } else if (name.equalsIgnoreCase(PackageInfo.RELEASE_DATE) && (relaseDate != null)) {
             buffer.append(String.format("<%1$s>%2$s</%1$s>", PackageInfo.RELEASE_DATE, relaseDate));

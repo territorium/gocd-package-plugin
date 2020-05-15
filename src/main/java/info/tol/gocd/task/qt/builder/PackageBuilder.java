@@ -64,6 +64,22 @@ public class PackageBuilder {
     this.environment = environment;
   }
 
+
+  /**
+   * Gets the {@link #workingDir}.
+   */
+  protected final File getWorkingDir() {
+    return workingDir;
+  }
+
+
+  /**
+   * Gets the {@link #environment}.
+   */
+  protected final Environment getEnvironment() {
+    return environment;
+  }
+
   /**
    * Set the path to the package definitions.
    *
@@ -80,9 +96,8 @@ public class PackageBuilder {
    * @param source
    * @param target
    */
-  public void addPackage(String name, File workingDir, String source, String target) {
-    String moduleName = this.environment.replaceModuleName(name);
-    this.data.add(new PackageData(moduleName, workingDir, source, target));
+  public void addPackage(String name, String source, String target) {
+    this.data.add(new PackageData(name, source, target, this));
   }
 
   /**
@@ -109,14 +124,14 @@ public class PackageBuilder {
   /**
    * Copy all package definitions of the module and its dependencies.
    *
-   * @param pkgData
+   * @param data
    */
   private void buildDependencies(PackageData data) throws IOException {
     Map<String, String> modules = new HashMap<>();
 
     // Collect depending packages
     for (File file : getSourcePath().toFile().listFiles()) {
-      String moduleName = this.environment.replaceModuleName(file.getName());
+      String moduleName = data.remap(file.getName());
       File location = new File(getTargetPath().toFile(), moduleName);
       if (data.getName().contains(moduleName) && !location.exists()) {
         modules.put(file.getName(), moduleName);
@@ -134,7 +149,7 @@ public class PackageBuilder {
       for (File file : meta.listFiles()) {
         String content = new String(Files.readAllBytes(file.toPath()));
         try (Writer writer = new FileWriter(file)) {
-          writer.write(this.environment.replaceModuleName(content));
+          writer.write(data.remap(content));
         }
       }
     }
@@ -142,7 +157,7 @@ public class PackageBuilder {
 
   /**
    * Build a package structure for the {@link PackagesBuilder}. The method expects a source
-   * file/folder, the {@link Version} information and the relative installation path.
+   * file/folder, the Version information and the relative installation path.
    *
    * Update the meta/package.xml with the actual version and release date.
    *

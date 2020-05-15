@@ -17,38 +17,14 @@ package info.tol.gocd.task.qt;
 
 import java.io.File;
 
-import info.tol.gocd.task.qt.builder.Version;
-import info.tol.gocd.util.Environment;
-
 /**
  * The {@link Constants} class.
  */
 public interface Constants {
 
   String ENV_VERSION     = "VERSION";
-
   String ENV_RELEASE     = "RELEASE";
-  String ENV_PACKAGE     = "PACKAGE";
-  String ENV_MODULE      = "MODULE";
 
   String PATH_PACKAGE    = String.join(File.separator, "build", "packages");
   String PATH_REPOSITORY = String.join(File.separator, "build", "repository");
-
-
-  /**
-   * This is a very dirty implementation to replace the module names of the module pathes and the
-   * release/package variables in package.xml
-   *
-   * @param environment
-   */
-  public static Environment updateEnvironment(Environment environment) {
-    Environment e = environment.clone();
-    if (e.isSet(Constants.ENV_RELEASE)) {
-      Version version = Version.parse(e.get(Constants.ENV_RELEASE));
-      e.set(Constants.ENV_RELEASE, version.toString("00.00"));
-      e.set(Constants.ENV_PACKAGE, version.toString("00.00-0"));
-      e.set(Constants.ENV_MODULE, version.toString("00.00-0").replaceAll("[.-]", ""));
-    }
-    return e;
-  }
 }
