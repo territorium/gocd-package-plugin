@@ -19,14 +19,9 @@ import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
 import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import info.tol.gocd.task.qt.Constants;
-import info.tol.gocd.task.qt.QtInstaller;
-import info.tol.gocd.task.qt.QtRepoGen;
 import info.tol.gocd.task.qt.builder.PackageBuilder;
 import info.tol.gocd.task.util.TaskRequest;
 import info.tol.gocd.task.util.TaskResponse;
@@ -81,7 +76,6 @@ public class TaskHandler implements RequestHandler {
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
     TaskRequest task = TaskRequest.of(request);
-    String mode = task.getConfig().getValue("mode");
     String config = task.getConfig().getValue("module");
     String source = task.getConfig().getValue("source");
     String target = task.getConfig().getValue("target");
@@ -92,120 +86,18 @@ public class TaskHandler implements RequestHandler {
 
     File workingDir = new File(task.getWorkingDirectory()).getAbsoluteFile();
     try {
-      switch (mode) {
-        case "PACKAGE":
-          Environment e = Constants.updateEnvironment(task.getEnvironment());
-          PackageBuilder builder = PackageBuilder.of(workingDir, e);
-          builder.setPackagePath(packagePath);
-          builder.addPackage(config, workingDir, source, target);
-          builder.build();
-          break;
+      Environment e = Constants.updateEnvironment(task.getEnvironment());
+      PackageBuilder builder = PackageBuilder.of(workingDir, e);
+      builder.setPackagePath(packagePath);
+      builder.addPackage(config, workingDir, source, target);
+      builder.build();
 
-        case "REPOSITORY":
-          Process process = createRepogen(task, mode, target, source);
-          this.console.readErrorOf(process.getErrorStream());
-          this.console.readOutputOf(process.getInputStream());
-
-          int exitCode = process.waitFor();
-          process.destroy();
-          return (exitCode == 0) ? TaskResponse.success("Executed the build").toResponse()
-              : TaskResponse.failure("Could not execute build! Process returned with status code " + exitCode)
-                  .toResponse();
-
-        case "ONLINE":
-        case "OFFLINE":
-        case "INSTALLER":
-          process = createInstaller(task, target, mode, config, source);
-          this.console.readErrorOf(process.getErrorStream());
-          this.console.readOutputOf(process.getInputStream());
-
-          exitCode = process.waitFor();
-          process.destroy();
-          return (exitCode == 0) ? TaskResponse.success("Executed the build").toResponse()
-              : TaskResponse.failure("Could not execute build! Process returned with status code " + exitCode)
-                  .toResponse();
-
-        default:
-          return TaskResponse.success("Nothing to do").toResponse();
-      }
+      return TaskResponse.success("Executed the build").toResponse();
     } catch (Throwable e) {
       if (e.getMessage() == null) {
         Arrays.asList(e.getStackTrace()).forEach(el -> this.console.printLine(el.toString()));
       }
       return TaskResponse.failure(e.getMessage()).toResponse();
     }
-    return TaskResponse.success("Executed the build").toResponse();
-  }
-
-  /**
-   * Create an repository generator.
-   *
-   * @param task
-   * @param mode
-   * @param source
-   * @param target
-   * @param source
-   */
-  protected Process createRepogen(TaskRequest task, String mode, String target, String source) throws IOException {
-    File workingDir = new File(task.getWorkingDirectory());
-
-    QtRepoGen builder = QtRepoGen.of(workingDir, task.getEnvironment());
-    builder.setUpdate();
-    builder.addModules(TaskHandler.toModules(source, task.getWorkingDirectory(), task.getEnvironment()));
-    builder.setPackagePath(Constants.PATH_PACKAGE);
-    builder.setRepositoryPath(Constants.PATH_REPOSITORY);
-    return builder.build();
-  }
-
-  /**
-   * Create an installer.
-   *
-   * @param task
-   * @param name
-   * @param mode
-   * @param config
-   * @param source
-   */
-  protected Process createInstaller(TaskRequest task, String name, String mode, String config, String source)
-      throws IOException {
-    File workingDir = new File(task.getWorkingDirectory());
-
-    QtInstaller builder = QtInstaller.of(workingDir, task.getEnvironment());
-    builder.setName(name).setMode(mode);
-    builder.setConfig(config);
-    builder.addModules(TaskHandler.toModules(source, task.getWorkingDirectory(), task.getEnvironment()));
-    builder.setPackagePath(Constants.PATH_PACKAGE);
-
-    builder.log(this.console);
-
-    return builder.build();
-  }
-
-  /**
-   * Converts the modules with it's dependencies
-   *
-   * @param task
-   * @param workingDir
-   * @param environment
-   */
-  protected static List<String> toModules(String text, String workingDir, Environment environment) {
-    Environment e = Constants.updateEnvironment(environment);
-    List<String> modules = new ArrayList<>();
-    if (text != null) {
-      for (String name : Arrays.asList(text.split("(,|\\s|\\n|\\r\\n)"))) {
-        if (!name.trim().isEmpty()) {
-          modules.add(e.replaceModuleName(name));
-        }
-      }
-
-      for (File file : new File(workingDir, Constants.PATH_PACKAGE).listFiles()) {
-        for (String module : new ArrayList<>(modules)) {
-          if (!modules.contains(file.getName()) && module.startsWith(file.getName())) {
-            modules.add(file.getName());
-          }
-        }
-      }
-    }
-    return modules;
   }
 }

@@ -109,16 +109,16 @@ public class PackageBuilder {
   /**
    * Copy all package definitions of the module and its dependencies.
    *
-   * @param name
+   * @param pkgData
    */
-  private void buildDependencies(String name) throws IOException {
+  private void buildDependencies(PackageData data) throws IOException {
     Map<String, String> modules = new HashMap<>();
 
     // Collect depending packages
     for (File file : getSourcePath().toFile().listFiles()) {
       String moduleName = this.environment.replaceModuleName(file.getName());
       File location = new File(getTargetPath().toFile(), moduleName);
-      if (name.contains(moduleName) && !location.exists()) {
+      if (data.getName().contains(moduleName) && !location.exists()) {
         modules.put(file.getName(), moduleName);
       }
     }
@@ -132,9 +132,9 @@ public class PackageBuilder {
       FileTreeCopying.copyFileTree(sourcePath, targetPath);
       File meta = new File(targetPath.toFile(), PackageBuilder.META);
       for (File file : meta.listFiles()) {
-        String data = new String(Files.readAllBytes(file.toPath()));
+        String content = new String(Files.readAllBytes(file.toPath()));
         try (Writer writer = new FileWriter(file)) {
-          writer.write(this.environment.replaceModuleName(data));
+          writer.write(this.environment.replaceModuleName(content));
         }
       }
     }
@@ -152,7 +152,7 @@ public class PackageBuilder {
    */
   public final void build() throws Exception {
     for (PackageData data : packageData()) {
-      buildDependencies(data.getName());
+      buildDependencies(data);
     }
 
     for (PackageData data : packageData()) {
