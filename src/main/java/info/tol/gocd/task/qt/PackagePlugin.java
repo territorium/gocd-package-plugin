@@ -26,8 +26,6 @@ import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 
 import java.util.Arrays;
 
-import info.tol.gocd.task.qt.handler.ConfigHandler;
-import info.tol.gocd.task.qt.handler.TaskHandler;
 import info.tol.gocd.task.qt.handler.ValidateHandler;
 import info.tol.gocd.util.request.Request;
 import info.tol.gocd.util.request.ViewHandler;
@@ -37,9 +35,9 @@ import info.tol.gocd.util.request.ViewHandler;
  * plugin implementation to be recognized as a Go plugin
  */
 @Extension
-public class QtPlugin implements GoPlugin {
+public class PackagePlugin implements GoPlugin {
 
-  private static final Logger LOGGER = Logger.getLoggerFor(QtPlugin.class);
+  private static final Logger LOGGER = Logger.getLoggerFor(PackagePlugin.class);
 
 
   /**
@@ -75,19 +73,19 @@ public class QtPlugin implements GoPlugin {
           return new ViewHandler("Qt Packages", "/task.template.html").handle(request);
 
         case Request.TASK_CONFIG:
-          return new ConfigHandler().handle(request);
+          return PackageConfig.createGoApiResponse();
 
         case Request.TASK_VALIDATE:
           return new ValidateHandler().handle(request);
 
         case Request.TASK_EXECUTE:
-          return new TaskHandler(JobConsoleLogger.getConsoleLogger()).handle(request);
+          return new PackageExecutor(JobConsoleLogger.getConsoleLogger()).handle(request);
 
         default:
           throw new UnhandledRequestTypeException(request.requestName());
       }
     } catch (Exception e) {
-      QtPlugin.LOGGER.error("Error while executing request " + request.requestName(), e);
+      PackagePlugin.LOGGER.error("Error while executing request " + request.requestName(), e);
       throw new RuntimeException(e);
     }
   }

@@ -101,7 +101,7 @@ class PackageInfo {
     Version release = this.env.isSet(Constants.ENV_RELEASE) ? Version.parse(this.env.get(Constants.ENV_RELEASE)) : null;
     Version version = this.env.isSet(Constants.ENV_VERSION) ? Version.parse(this.env.get(Constants.ENV_VERSION)) : null;
     if (version != null) {
-      if (release == null || release.getName() == null) {
+      if ((release == null) || (release.getName() == null)) {
         version = Version.of(version.getMajor(), version.getMinor(), version.getPatch());
       } else {
         version = Version.of(version.getMajor(), version.getMinor(), -1, null, version.getBuild());

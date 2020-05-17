@@ -18,6 +18,7 @@ package info.tol.gocd.task.qt.builder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,15 +35,14 @@ import info.tol.gocd.util.archive.Archive;
 final class PackageData {
 
   private static final Pattern ARCHIVES = Pattern.compile("(([^#]+)(?:\\.zip|\\.tar(?:\\.gz)?|\\.war))(?:[!#](.+))?");
-  private static final Pattern REPLACER = Pattern.compile("^([^/]*)/([^/]+)/([^/]+)/(.*)$", Pattern.CASE_INSENSITIVE);
-  private static final Pattern VERSION  =
-      Pattern.compile("<Version>\\$\\{RELEASE;([0.-]+)\\}</Version>", Pattern.CASE_INSENSITIVE);
+  private static final Pattern REPLACER = Pattern.compile("^([^/]*)/([^/]+)/([^/]+)/(.*)$");
+  private static final Pattern RELEASE  = Pattern.compile("(?:\\$\\{|\\{\\{\\$)RELEASE;([0.-]+)\\}\\}?");
 
 
   private final String      name;
+  private final String      module;
   private final String      source;
   private final String      target;
-  private final String      pattern;
 
   private final File        workingDir;
   private final Environment environment;
@@ -56,10 +56,10 @@ final class PackageData {
    * @param builder
    */
   public PackageData(String name, String source, String target, PackageBuilder builder) {
-    this.name = toName(name, builder.getEnvironment());
+    this.name = PackageData.toName(name, builder.getEnvironment());
+    this.module = name;
     this.source = source;
     this.target = target;
-    this.pattern = name;
     this.workingDir = builder.getWorkingDir();
     this.environment = builder.getEnvironment();
   }
@@ -70,7 +70,7 @@ final class PackageData {
    * @param name
    */
   private static String toName(String name, Environment environment) {
-    Matcher m = REPLACER.matcher(name);
+    Matcher m = PackageData.REPLACER.matcher(name);
     if (!m.find()) {
       return name;
     }
@@ -85,21 +85,21 @@ final class PackageData {
    * @param data
    */
   public String remap(String data) {
-    Matcher matcher = REPLACER.matcher(pattern);
+    Matcher matcher = PackageData.REPLACER.matcher(this.module);
     if (!matcher.find()) {
       return data;
     }
 
     String pattern = String.format("%s(%s)", matcher.group(1).replace(".", "\\."), matcher.group(2));
-    String value = environment.replaceByPattern(matcher.group(3));
+    String value = this.environment.replaceByPattern(matcher.group(3));
     Version version = Version.parse(value);
 
-    data = environment.replaceByPattern(data);
-    matcher = VERSION.matcher(data);
+    matcher = PackageData.RELEASE.matcher(data);
     if (matcher.find()) {
-      String text = version.toString(matcher.group(1));
-      data = matcher.replaceFirst(String.format("<Version>%s</Version>", text));
+      data = matcher.replaceFirst(version.toString(matcher.group(1)));
     }
+
+    data = this.environment.replaceByPattern(data);
     value = value.replaceAll("[.-]", "");
 
     int offset = 0;
@@ -138,8 +138,11 @@ final class PackageData {
   /**
    * Gets the target location.
    */
-  public final String getTarget(Environment environment) {
-    return (this.target == null) ? "" : this.target;
+  public final String getTarget(String suffix) {
+    String location = (this.target == null) ? "" : this.target;
+    if (suffix != null)
+      location = Paths.get(location, suffix).toString();
+    return location;
   }
 
   /**
@@ -149,33 +152,54 @@ final class PackageData {
    * @param environment
    */
   public final void build(File workingDir, Environment environment) throws IOException {
-    String source = getSource();
+    String sources = getSource();
+    Environment env = new Environment();
+    LocalDate releaseDate = null;
 
-    // Check archives that can be uncompressed (.zip, .tar, .tar.gz, .war)
-    Matcher match = PackageData.ARCHIVES.matcher(source);
-    if (match.find()) {
-      for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, match.group(1))) {
-        Archive.of(matcher.getFile()).extract();
+    for (String source : sources.split("\n")) {
+      String suffix = null;
+      if (source.contains(";")) {
+        suffix = source.substring(source.indexOf(';') + 1);
+        source = source.substring(0, source.indexOf(';'));
       }
-      source = match.group(2);
-      if (match.group(3) != null) {
-        source += "/" + match.group(3);
+
+      // Check archives that can be uncompressed (.zip, .tar, .tar.gz, .war)
+      Matcher match = PackageData.ARCHIVES.matcher(source);
+      if (match.find()) {
+        for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, match.group(1))) {
+          Archive.of(matcher.getFile()).extract();
+        }
+        source = match.group(2);
+        if (match.group(3) != null) {
+          source += "/" + match.group(3);
+        }
+      }
+
+      Path workingPath = workingDir.toPath().resolve(getName()).resolve(PackageBuilder.DATA);
+      for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, source)) {
+        String target = getTarget(suffix);
+        if (target.isEmpty() && !matcher.getFile().isDirectory()) {
+          target = matcher.getFile().getName();
+        }
+
+        // Copy the data to the build
+        Path path = workingPath.resolve(matcher.map(target));
+        path.toFile().getParentFile().mkdirs();
+        LocalDate date = FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
+        env.add(matcher.getEnvironment());
+
+        if (releaseDate == null || releaseDate.isBefore(date))
+          releaseDate = date;
       }
     }
 
-    Path workingPath = workingDir.toPath().resolve(getName()).resolve(PackageBuilder.DATA);
-    for (PathMatcher matcher : PathMatcher.of(getWorkingDir(), environment, source)) {
-      // Copy the data to the build
-      Path path = workingPath.resolve(matcher.map(getTarget(environment)));
-      path.toFile().getParentFile().mkdirs();
-      LocalDate releaseDate = FileTreeCopying.copyFileTree(matcher.getFile().toPath(), path);
+    // TODO Release date should be calculated.
+    if (releaseDate == null)
+      releaseDate = LocalDate.now();
 
-      System.out.println(getName() + "=" + releaseDate);
-      releaseDate = LocalDate.now(); // TODO should be removed
+    // Change the package info
+    PackageInfo info = new PackageInfo(env);
+    info.updatePackageInfo(getName(), releaseDate, workingDir);
 
-      // Change the package info
-      PackageInfo info = new PackageInfo(matcher.getEnvironment());
-      info.updatePackageInfo(getName(), releaseDate, workingDir);
-    }
   }
 }

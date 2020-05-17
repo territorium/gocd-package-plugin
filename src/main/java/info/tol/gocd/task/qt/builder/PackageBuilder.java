@@ -69,7 +69,7 @@ public class PackageBuilder {
    * Gets the {@link #workingDir}.
    */
   protected final File getWorkingDir() {
-    return workingDir;
+    return this.workingDir;
   }
 
 
@@ -77,7 +77,7 @@ public class PackageBuilder {
    * Gets the {@link #environment}.
    */
   protected final Environment getEnvironment() {
-    return environment;
+    return this.environment;
   }
 
   /**

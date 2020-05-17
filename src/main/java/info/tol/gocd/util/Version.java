@@ -177,7 +177,7 @@ public final class Version implements Comparable<Version> {
     StringBuffer buffer = new StringBuffer();
     String text = "%0" + matcher.group(1).length() + "d.%0" + matcher.group(2).length() + "d";
     buffer.append(String.format(text, getMajor(), getMinor()));
-    if (matcher.group(3) != null && (getPatch() >= 0)) {
+    if ((matcher.group(3) != null) && (getPatch() >= 0)) {
       text = ".%0" + matcher.group(3).length() + "d";
       buffer.append(String.format(text, getPatch()));
     }

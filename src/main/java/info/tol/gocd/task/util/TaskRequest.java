@@ -18,6 +18,7 @@ package info.tol.gocd.task.util;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 
 import java.io.StringReader;
+import java.util.function.Supplier;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -51,18 +52,18 @@ import info.tol.gocd.util.Environment;
  * }
  * </pre>
  */
-public class TaskRequest {
+public class TaskRequest<C extends TaskConfig> {
 
-  private String            workingDirectory;
-
-  private final TaskConfig  config      = new TaskConfig();
+  private String            workingDir;
   private final Environment environment = new Environment();
+
+  private C                 config;
 
   /**
    * Gets the working directory.
    */
-  public final String getWorkingDirectory() {
-    return this.workingDirectory;
+  public final String getWorkingDir() {
+    return this.workingDir;
   }
 
   /**
@@ -75,27 +76,24 @@ public class TaskRequest {
   /**
    * Gets the environment variables
    */
-  public final TaskConfig getConfig() {
+  public final C getConfig() {
     return this.config;
   }
 
-
-  public final void parse(String text) {
-    JsonObject json = Json.createReader(new StringReader(text)).readObject();
+  public static <C extends TaskConfig> TaskRequest<C> of(GoPluginApiRequest request, Supplier<C> supplier) {
+    StringReader reader = new StringReader(request.requestBody());
+    JsonObject json = Json.createReader(reader).readObject();
     JsonObject context = json.getJsonObject("context");
     JsonObject environment = context.getJsonObject("environmentVariables");
 
-    this.config.parse(json.getJsonObject("config"));
-    this.workingDirectory = context.getString("workingDirectory");
-
+    TaskRequest<C> task = new TaskRequest<>();
+    task.workingDir = context.getString("workingDirectory");
     for (String name : environment.keySet()) {
-      this.environment.set(name, environment.getString(name));
+      task.environment.set(name, environment.getString(name));
     }
-  }
 
-  public static TaskRequest of(GoPluginApiRequest request) {
-    TaskRequest taskRequest = new TaskRequest();
-    taskRequest.parse(request.requestBody());
-    return taskRequest;
+    task.config = supplier.get();
+    task.config.parse(json.getJsonObject("config"));
+    return task;
   }
 }

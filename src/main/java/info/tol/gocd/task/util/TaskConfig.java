@@ -15,8 +15,6 @@
 
 package info.tol.gocd.task.util;
 
-import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
-
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +49,6 @@ import javax.json.JsonObject;
 public class TaskConfig {
 
   private final Map<String, Item> config = new HashMap<>();
-
 
   /**
    * Get all names of the configuration
@@ -99,21 +96,10 @@ public class TaskConfig {
     for (String name : json.keySet()) {
       JsonObject config = json.getJsonObject(name);
       String value = config.containsKey("value") ? config.getString("value") : "";
-      boolean secure = config.getBoolean("secure");
-      boolean required = config.getBoolean("required");
+      boolean secure = config.containsKey("secure") ? config.getBoolean("secure") : false;
+      boolean required = config.containsKey("required") ? config.getBoolean("required") : false;
       this.config.put(name, new Item(value, secure, required));
     }
-  }
-
-  /**
-   * Parses the {@link TaskConfig} from the {@link GoPluginApiRequest}.
-   *
-   * @param request
-   */
-  public static TaskConfig of(GoPluginApiRequest request) {
-    TaskConfig taskRequest = new TaskConfig();
-    taskRequest.parse(request.requestBody());
-    return taskRequest;
   }
 
   /**

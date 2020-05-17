@@ -92,6 +92,16 @@ public class Environment {
   }
 
   /**
+   * Set a new parameter to the {@link Environment}.
+   *
+   * @param environment
+   */
+  public final Environment add(Environment environment) {
+    this.environment.putAll(environment.toMap());
+    return this;
+  }
+
+  /**
    * Replaces the indexed or named placeholder's with the the parameter values.
    *
    * @param pattern
@@ -150,7 +160,7 @@ public class Environment {
 
   /**
    * Load additional environment variables.
-   * 
+   *
    * @param file
    */
   public final Environment load(File file) throws FileNotFoundException, IOException {

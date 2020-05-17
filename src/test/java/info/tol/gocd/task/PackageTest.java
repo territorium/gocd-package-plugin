@@ -1,5 +1,5 @@
 
-package cd.go.task;
+package info.tol.gocd.task;
 
 import java.io.File;
 
@@ -9,7 +9,7 @@ import info.tol.gocd.util.Environment;
 public class PackageTest {
 
   public static void main(String[] args) throws Exception {
-    File workingDir = new File("/home/brigl/Downloads/smartIO-Packaging-Master");
+    File workingDir = new File("/home/brigl/test");
     Environment environment = new Environment();
     environment.set("RELEASE", "20.04-dev");
 
@@ -18,7 +18,7 @@ public class PackageTest {
 
   protected static void buildPackages(File workingDir, Environment environment) throws Exception {
     PackageBuilder builder = PackageBuilder.of(workingDir, environment);
-    builder.setPackagePath("installer/packages1");
+    builder.setPackagePath("installer/packages2");
 
     builder.addPackage("tol./smartio/$RELEASE/.server_linux",
         "download/smartIO-Server-Linux-(?<VERSION>[\\d.\\-+]+).tar.gz", "");

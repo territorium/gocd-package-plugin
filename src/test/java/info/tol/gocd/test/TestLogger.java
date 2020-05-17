@@ -13,17 +13,38 @@
  * the specific language governing rights and limitations under the License.
  */
 
-package info.tol.gocd.task.qt;
+package info.tol.gocd.test;
 
-import java.io.File;
+import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
+
+import java.io.InputStream;
+import java.util.Map;
+
 
 /**
- * The {@link Constants} class.
+ * The {@link TestLogger} class.
  */
-public interface Constants {
+public class TestLogger extends JobConsoleLogger {
 
-  String ENV_VERSION  = "VERSION";
-  String ENV_RELEASE  = "RELEASE";
+  public static final JobConsoleLogger CONSOLE = new TestLogger();
 
-  String PATH_PACKAGE = String.join(File.separator, "build", "packages");
+  private TestLogger() {}
+
+  public void printLine(String line) {
+    System.out.println(line);
+  }
+
+  public void readErrorOf(InputStream in) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void readOutputOf(InputStream in) {
+    throw new UnsupportedOperationException();
+  }
+
+  public void printEnvironment(Map<String, String> environment) {
+    System.out.println("Environment variables:");
+    environment.forEach((k, v) -> System.out.printf("  %1$-16s = %2$s\n", k, v));
+    System.out.println();
+  }
 }

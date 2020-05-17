@@ -12,7 +12,7 @@
  * the License.
  */
 
-package info.tol.gocd.task.qt.handler;
+package info.tol.gocd.task.qt;
 
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
@@ -21,7 +21,6 @@ import com.thoughtworks.go.plugin.api.task.JobConsoleLogger;
 import java.io.File;
 import java.util.Arrays;
 
-import info.tol.gocd.task.qt.Constants;
 import info.tol.gocd.task.qt.builder.PackageBuilder;
 import info.tol.gocd.task.util.TaskRequest;
 import info.tol.gocd.task.util.TaskResponse;
@@ -55,16 +54,16 @@ import info.tol.gocd.util.request.RequestHandler;
  * }
  * </pre>
  */
-public class TaskHandler implements RequestHandler {
+public class PackageExecutor implements RequestHandler {
 
   private final JobConsoleLogger console;
 
   /**
-   * Constructs an instance of {@link TaskHandler}.
+   * Constructs an instance of {@link PackageExecutor}.
    *
    * @param console
    */
-  public TaskHandler(JobConsoleLogger console) {
+  public PackageExecutor(JobConsoleLogger console) {
     this.console = console;
   }
 
@@ -75,24 +74,20 @@ public class TaskHandler implements RequestHandler {
    */
   @Override
   public GoPluginApiResponse handle(GoPluginApiRequest request) {
-    TaskRequest task = TaskRequest.of(request);
-    String release = task.getConfig().getValue("name");
-    String config = task.getConfig().getValue("module");
-    String source = task.getConfig().getValue("source");
-    String target = task.getConfig().getValue("target");
-    String packagePath = task.getConfig().getValue("path");
+    TaskRequest<PackageConfig> task = PackageConfig.of(request);
+    PackageConfig config = task.getConfig();
 
     Environment env = task.getEnvironment();
-    env.set(Constants.ENV_RELEASE, release);
+    env.set(Constants.ENV_RELEASE, config.getReleaseName());
 
-    this.console.printLine("Launching command on: " + task.getWorkingDirectory());
+    this.console.printLine("Launching command on: " + task.getWorkingDir());
     this.console.printEnvironment(task.getEnvironment().toMap());
 
-    File workingDir = new File(task.getWorkingDirectory()).getAbsoluteFile();
+    File workingDir = new File(task.getWorkingDir()).getAbsoluteFile();
     try {
       PackageBuilder builder = PackageBuilder.of(workingDir, env);
-      builder.setPackagePath(packagePath);
-      builder.addPackage(config, source, target);
+      builder.setPackagePath(config.getPath());
+      builder.addPackage(config.getModuleName(), config.getSources(), config.getTarget());
       builder.build();
 
       return TaskResponse.success("Executed the build").toResponse();
