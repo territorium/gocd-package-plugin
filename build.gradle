@@ -62,7 +62,7 @@ sourceSets {
 }
 
 dependencies {
-  compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: '19.2.0'
+  compileOnly group: 'cd.go.plugin', name: 'go-plugin-api', version: '20.9.0'
   compile group: 'org.glassfish', name: 'javax.json', version: '1.1.4'
   compile group: 'stax', name: 'stax', version: '1.2.0'
   compile group: 'org.apache.commons', name: 'commons-compress', version: '1.20'
